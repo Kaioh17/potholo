@@ -157,3 +157,33 @@ def test_reuploading_the_same_batch_does_not_double_count(client):
     rows = [c for c in client.get("/v1/clusters").json() if abs(c["lat"] - lat) < 0.001]
     assert len(rows) == 1
     assert rows[0]["detections"] == 1
+
+
+def test_devices_lists_every_uploader_with_what_it_found(client):
+    lat = LAT + 0.014
+    for k in range(2):
+        client.post(
+            "/v1/batches",
+            json=payload("roster-hit", f"trip-roster-{k}", lat=lat, seed=k + 120),
+        )
+    # A phone on a smooth road uploads plenty and finds nothing.
+    client.post(
+        "/v1/batches",
+        json=payload(
+            "roster-quiet", "trip-quiet", lat=lat + 0.02, potholes=(), seed=130
+        ),
+    )
+
+    rows = {d["device_id"]: d for d in client.get("/v1/devices").json()}
+    hit, quiet = rows["roster-hit"], rows["roster-quiet"]
+
+    assert hit["batches"] == 2
+    assert hit["detections"] == 2
+    assert hit["activity"] == "active"
+    assert hit["sample_rate_hz"] == pytest.approx(100.0, abs=1.0)
+    assert hit["max_severity"] >= hit["mean_severity"] > 0
+
+    assert quiet["batches"] == 1
+    assert quiet["detections"] == 0
+    assert quiet["mean_severity"] is None
+    assert quiet["activity"] == "active"
