@@ -11,3 +11,6 @@ __pycache__/
 .venv/
 .pytest_cache/
 .ruff_cache/
+
+# Claude Code local settings (launch.json is shared)
+.claude/settings.local.json

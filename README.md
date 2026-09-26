@@ -87,6 +87,8 @@ Routes:
 
 - `/` is the landing page.
 - `/demo` is a simulated drive through a pothole with mock phone readings.
+- `/map` shows the locations several vehicles agreed on, read live from the API.
+  It needs the API running; `npm run dev` proxies `/api` to `http://127.0.0.1:8000`.
 - `/login` is the login form.
   It is UI only for now, because authentication arrives with the API.
 

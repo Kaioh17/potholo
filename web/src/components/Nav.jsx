@@ -10,6 +10,7 @@ export default function Nav({ wide = false }) {
           <Link to="/#how">How it works</Link>
           <Link to="/#who">Who it helps</Link>
           <NavLink to="/demo">Demo</NavLink>
+          <NavLink to="/map">Map</NavLink>
           <Link to="/#faq">FAQ</Link>
         </nav>
         <Link to="/login" className="btn btn--sm">

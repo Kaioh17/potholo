@@ -48,6 +48,10 @@ python ../mock/seed_db.py --reset
 That also scores the detector against the catalogue and stores the outcome of
 each scenario in `scenario_runs`. See `../docs/synthetic-fleet.md`.
 
+With the API running and the database seeded, the web app's `/map` page reads
+`GET /v1/clusters` live. The Vite dev server proxies `/api` here, so both run on
+one origin in development and no base URL is baked into the build.
+
 ## Setup
 
 Requires Python 3.12 or newer.

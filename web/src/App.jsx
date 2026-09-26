@@ -5,6 +5,7 @@ import Login from './pages/Login.jsx'
 
 // The 3D scene pulls in three.js, so load it only when the demo page is opened.
 const Demo = lazy(() => import('./pages/Demo.jsx'))
+const MapPage = lazy(() => import('./pages/Map.jsx'))
 
 function ScrollToTop() {
   const { pathname, hash } = useLocation()
@@ -28,6 +29,14 @@ export default function App() {
           element={
             <Suspense fallback={null}>
               <Demo />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/map"
+          element={
+            <Suspense fallback={null}>
+              <MapPage />
             </Suspense>
           }
         />

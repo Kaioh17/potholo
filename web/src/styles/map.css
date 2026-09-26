@@ -1,0 +1,512 @@
+/* Cluster map page. Follows tokens.css: warm monochrome, amber as the only
+   accent, flat surfaces, 1px borders, no gradients. */
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.mapp {
+  padding: 32px 0 96px;
+}
+
+.mapp__head {
+  margin-bottom: 32px;
+  max-width: 62ch;
+}
+
+.mapp__head h1 {
+  font-size: clamp(1.75rem, 3.2vw, 2.5rem);
+  letter-spacing: -0.02em;
+  margin-bottom: 12px;
+}
+
+.mapp__lede {
+  color: var(--ink-soft);
+}
+
+.mapp__loading {
+  padding: 40px 0;
+  color: var(--muted);
+}
+
+/* Summary strip -------------------------------------------------------- */
+
+.mapp__stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  margin: 0 0 28px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+}
+
+.mapp__stat {
+  padding: 18px 20px;
+  background: var(--surface);
+}
+
+.mapp__stat dt {
+  color: var(--muted);
+  font: 700 0.75rem/1 var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.mapp__stat dd {
+  margin: 10px 0 0;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.mapp__stat strong {
+  font-size: 1.75rem;
+  font-weight: 500;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.mapp__stat span {
+  color: var(--muted);
+  font-size: 0.8125rem;
+}
+
+/* Filters -------------------------------------------------------------- */
+
+.mapp__filters {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.chip {
+  padding: 8px 16px;
+  border: 1px solid #d8d7d3;
+  border-radius: 9999px;
+  background: transparent;
+  color: var(--ink-soft);
+  font: 500 0.875rem/1 var(--font-body);
+  cursor: pointer;
+  transition: background-color 200ms var(--ease);
+}
+
+.chip:hover {
+  background: #efeeea;
+}
+
+.chip.is-active {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #fff;
+}
+
+/* Layout --------------------------------------------------------------- */
+
+.mapp__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(320px, 3fr);
+  gap: 24px;
+  align-items: start;
+  margin-bottom: 40px;
+}
+
+.mapp__stage {
+  display: flex;
+  flex-direction: column;
+}
+
+.mapp__canvas {
+  padding: 8px;
+}
+
+.mapp__legend {
+  padding: 14px 20px 18px;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+/* The map itself ------------------------------------------------------- */
+
+.cmap {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+
+.cmap__bg {
+  fill: var(--surface-alt);
+}
+
+.cmap__grid line {
+  stroke: var(--border);
+  stroke-width: 1;
+}
+
+.cmap__north line,
+.cmap__north path {
+  stroke: var(--muted);
+  fill: var(--muted);
+  stroke-width: 1.5;
+}
+
+.cmap__north text {
+  fill: var(--muted);
+  font: 700 12px var(--font-mono);
+  text-anchor: middle;
+}
+
+.cmap__scale line {
+  stroke: var(--ink-soft);
+  stroke-width: 1.5;
+}
+
+.cmap__scale text {
+  fill: var(--muted);
+  font: 500 12px var(--font-mono);
+}
+
+.cmap__pin {
+  cursor: pointer;
+}
+
+.cmap__spread {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 1;
+  stroke-dasharray: 4 4;
+  opacity: 0.5;
+}
+
+.cmap__halo {
+  fill: var(--ink);
+  opacity: 0;
+  transition: opacity 180ms var(--ease);
+}
+
+.cmap__pin:hover .cmap__halo,
+.cmap__pin:focus-visible .cmap__halo {
+  opacity: 0.08;
+}
+
+.cmap__pin:focus-visible {
+  outline: none;
+}
+
+.cmap__pin:focus-visible .cmap__ring,
+.cmap__ring {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 2;
+}
+
+.cmap__dot {
+  stroke-width: 1.5;
+  transition: stroke-width 180ms var(--ease);
+}
+
+.cmap__pin--confirmed .cmap__dot {
+  fill: var(--amber);
+  stroke: var(--amber-ink);
+}
+
+.cmap__pin--candidate .cmap__dot {
+  fill: var(--surface);
+  stroke: #c9c8c4;
+}
+
+.cmap__pin--reported .cmap__dot {
+  fill: var(--green-pale);
+  stroke: var(--green-ink);
+}
+
+.cmap__label {
+  fill: var(--ink);
+  font: 600 12px var(--font-mono);
+  text-anchor: middle;
+  pointer-events: none;
+}
+
+/* Detail panel --------------------------------------------------------- */
+
+.detail {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 22px 24px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+}
+
+.detail--empty {
+  align-items: center;
+  justify-content: center;
+  min-height: 260px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.detail__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.detail__coords {
+  font: 500 0.875rem/1 var(--font-mono);
+  color: var(--ink-soft);
+}
+
+.detail__severity {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.detail__severity strong {
+  font-size: 2.5rem;
+  font-weight: 500;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.detail__severity span {
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.detail .eyebrow {
+  margin: 4px 0 0;
+}
+
+.detail__rows {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+}
+
+.detail__rows > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.detail__rows dt {
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.detail__rows dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+
+.detail__note {
+  color: var(--muted);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+.detail__report {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.detail__payload {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  margin: 0;
+  padding: 14px;
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.detail__payload > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.detail__payload dt {
+  color: var(--muted);
+  font: 500 0.6875rem/1.4 var(--font-mono);
+}
+
+.detail__payload dd {
+  margin: 0;
+  font: 400 0.75rem/1.5 var(--font-mono);
+  word-break: break-word;
+}
+
+/* Hit rate bar --------------------------------------------------------- */
+
+.hitrate {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hitrate__track {
+  width: 72px;
+  height: 6px;
+  border-radius: 9999px;
+  background: var(--border);
+  overflow: hidden;
+}
+
+.hitrate__fill {
+  height: 100%;
+  background: var(--amber);
+}
+
+/* Table ---------------------------------------------------------------- */
+
+.mapp__table .eyebrow {
+  margin-bottom: 12px;
+}
+
+.ctable__scroll {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+}
+
+.ctable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.ctable th,
+.ctable td {
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.ctable thead th {
+  color: var(--muted);
+  font: 700 0.6875rem/1 var(--font-mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.ctable tbody tr:last-child th,
+.ctable tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.ctable tbody tr.is-selected {
+  background: var(--amber-pale);
+}
+
+.ctable tbody th {
+  font-weight: 400;
+}
+
+.ctable tbody th button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font: 500 0.875rem/1 var(--font-mono);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: #d8d7d3;
+}
+
+.ctable tbody th button:hover {
+  text-decoration-color: var(--ink);
+}
+
+.ctable__num {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Offline and empty states --------------------------------------------- */
+
+.mapp__offline {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 28px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+}
+
+.mapp__offline h2 {
+  font-size: 1.25rem;
+}
+
+.mapp__offline p {
+  color: var(--muted);
+  font-size: 0.9375rem;
+}
+
+.mapp__offline pre {
+  width: 100%;
+  margin: 0;
+  padding: 14px 16px;
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow-x: auto;
+}
+
+.mapp__offline code {
+  font: 400 0.8125rem/1.7 var(--font-mono);
+  white-space: pre;
+}
+
+/* Narrow screens ------------------------------------------------------- */
+
+@media (max-width: 1040px) {
+  .mapp__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .mapp__stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .mapp__stats {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chip,
+  .cmap__halo,
+  .cmap__dot {
+    transition: none;
+  }
+}
