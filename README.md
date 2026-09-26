@@ -20,6 +20,8 @@ This repository is the prototype, and it has two parts.
 | Data processing API (`api/`) | Working | FastAPI. Ingest, detection, clustering, CDOT reporting. |
 | Mock phone (`mock/`) | Working | Generates payloads in the real phone wire format. |
 | Real drive data (`data/`) | Working | 418s of instrumented drive, recovered from a screen recording. |
+| Web app (`web/`) | In progress | React landing page, login, and a simulated pothole demo. |
+| Data processing API | Planned | FastAPI. This is real, not mocked. |
 | Mobile app | Not started | React Native. Out of scope for the prototype. |
 
 ## How detection works
@@ -81,6 +83,7 @@ Other scripts:
 Routes:
 
 - `/` is the landing page.
+- `/demo` is a simulated drive through a pothole with mock phone readings.
 - `/login` is the login form.
   It is UI only for now, because authentication arrives with the API.
 
