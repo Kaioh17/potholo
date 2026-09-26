@@ -1,7 +1,10 @@
-import { useEffect } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { Route, Routes, useLocation } from 'react-router-dom'
 import Landing from './pages/Landing.jsx'
 import Login from './pages/Login.jsx'
+
+// The 3D scene pulls in three.js, so load it only when the demo page is opened.
+const Demo = lazy(() => import('./pages/Demo.jsx'))
 
 function ScrollToTop() {
   const { pathname, hash } = useLocation()
@@ -20,6 +23,14 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
+        <Route
+          path="/demo"
+          element={
+            <Suspense fallback={null}>
+              <Demo />
+            </Suspense>
+          }
+        />
         <Route path="*" element={<Landing />} />
       </Routes>
     </>

@@ -16,7 +16,7 @@ This repository is the prototype, and it has two parts.
 
 | Part | Status | Notes |
 | --- | --- | --- |
-| Web app (`web/`) | In progress | React landing page and login. It will later host a demo. |
+| Web app (`web/`) | In progress | React landing page, login, and a simulated pothole demo. |
 | Data processing API | Planned | FastAPI. This is real, not mocked. |
 | Mobile app | Not started | React Native. Out of scope for the prototype. |
 
@@ -59,6 +59,7 @@ Other scripts:
 Routes:
 
 - `/` is the landing page.
+- `/demo` is a simulated drive through a pothole with mock phone readings.
 - `/login` is the login form.
   It is UI only for now, because authentication arrives with the API.
 

@@ -418,3 +418,159 @@
   color: var(--muted);
   font-size: 0.9375rem;
 }
+
+/* Demo page */
+.wrap--wide {
+  max-width: 1440px;
+  padding-inline: clamp(24px, 6vw, 96px);
+}
+
+.nav__links a[aria-current='page'] {
+  color: var(--ink);
+}
+
+.demo {
+  padding-block: 24px 112px;
+}
+
+.demo__back {
+  margin-bottom: 24px;
+}
+
+.demo__head {
+  max-width: 44rem;
+  margin-bottom: 32px;
+}
+
+.demo__head h1 {
+  font-size: clamp(2.25rem, 4.4vw, 3.5rem);
+  line-height: 1.08;
+  letter-spacing: -0.035em;
+  margin-bottom: 20px;
+}
+
+.demo__lede {
+  color: var(--ink-soft);
+  font-size: 1.0625rem;
+}
+
+.demo__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(300px, 3fr);
+  gap: 32px;
+  align-items: stretch;
+}
+
+.demo__stage {
+  display: flex;
+  flex-direction: column;
+}
+
+.demo__canvas {
+  flex: 1;
+  min-height: 460px;
+  background: var(--canvas);
+}
+
+.recording {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px 24px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+}
+
+.recording__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.recording__title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+}
+
+.recording__list,
+.recording__metrics {
+  margin: 0;
+}
+
+.recording__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding-block: 8px;
+  border-top: 1px solid var(--border);
+  font-size: 0.9375rem;
+}
+
+.recording__row dt {
+  color: var(--muted);
+}
+
+.recording__row dd {
+  margin: 0;
+  text-align: right;
+}
+
+.recording__eyebrow {
+  margin: 4px 0 -8px;
+}
+
+.recording__metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-btn);
+  overflow: hidden;
+}
+
+.metric {
+  padding: 12px 14px;
+  background: var(--surface-alt);
+}
+
+.metric dt {
+  color: var(--muted);
+  font-size: 0.8125rem;
+}
+
+.metric dd {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin: 2px 0 0;
+}
+
+.metric dd span {
+  font: 500 1.125rem/1.3 var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.metric dd small {
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+.recording__note {
+  margin-top: auto;
+  color: var(--muted);
+  font-size: 0.8125rem;
+}
+
+@media (max-width: 1000px) {
+  .demo__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .demo__canvas {
+    min-height: 340px;
+  }
+}
