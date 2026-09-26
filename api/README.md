@@ -13,6 +13,7 @@ The maths is documented in `../docs/detection-model.md`.
 | --- | --- |
 | `GET /health` | liveness, including a database round trip |
 | `POST /v1/batches` | ingest a few seconds of a trip, return what was found in it |
+| `GET /v1/devices` | every phone that has uploaded, with its upload health and what it found |
 | `GET /v1/clusters` | cross-checked pothole locations, best evidence first |
 | `POST /v1/clusters/{id}/report` | prepare a CDOT Open311 request for a confirmed cluster |
 
@@ -37,6 +38,7 @@ curl http://127.0.0.1:8000/v1/clusters
 
 A cluster needs 3 distinct devices, 4 detections and a 35% hit rate before it is
 confirmed, so post batches with several `device_id` values to see one confirm.
+`python mock/fleet.py` posts a whole uneven fleet at once, which fills the admin page.
 
 ## Setup
 

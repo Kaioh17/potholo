@@ -84,6 +84,7 @@ Routes:
 
 - `/` is the landing page.
 - `/demo` is a simulated drive through a pothole with mock phone readings.
+- `/admin` is the fleet dashboard. It reads `GET /v1/devices` and `GET /v1/clusters` from the API, refreshes every 5 seconds, and has no login yet.
 - `/login` is the login form.
   It is UI only for now, because authentication arrives with the API.
 

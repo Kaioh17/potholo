@@ -17,11 +17,12 @@ from pydantic import BaseModel
 from app.database import SessionDep
 from app.detection import severity as sev
 from app.detection.locate import metres_between
+from app.devices import activity, as_utc, device_rows, record_device
 from app.models.detection import PotholeCluster
 from app.pipeline import process_batch
 from app.reporting import chicago311
 from app.repository import add_detection, list_clusters, record_passes
-from app.schemas import BatchResult, ClusterOut, SensorBatch
+from app.schemas import BatchResult, ClusterOut, DeviceOut, SensorBatch
 
 router = APIRouter(prefix="/v1", tags=["detection"])
 
@@ -46,8 +47,8 @@ def _to_out(cluster: PotholeCluster) -> ClusterOut:
         severity=round(cluster.severity, 1),
         confidence=cluster.confidence,
         status=cluster.status,
-        first_seen=cluster.created_at,
-        last_seen=cluster.updated_at,
+        first_seen=as_utc(cluster.created_at),
+        last_seen=as_utc(cluster.updated_at),
         service_request_id=cluster.service_request_id,
     )
 
@@ -69,6 +70,7 @@ def ingest(
     record_passes(session, batch.trip_id, batch.gps)
     for det in result.detections:
         add_detection(session, det)
+    record_device(session, batch, result)
     session.commit()
     return result
 
@@ -81,6 +83,37 @@ def clusters(
 ) -> list[ClusterOut]:
     """Cross-checked locations, best evidence first."""
     return [_to_out(c) for c in list_clusters(session, status, min_confidence)]
+
+
+def _round(value: float | None, digits: int) -> float | None:
+    return None if value is None else round(value, digits)
+
+
+@router.get("/devices", response_model=list[DeviceOut])
+def devices(session: SessionDep) -> list[DeviceOut]:
+    """Every phone that has uploaded, most recently seen first."""
+    return [
+        DeviceOut(
+            device_id=r.device.device_id,
+            activity=activity(r.device.updated_at),
+            first_seen=as_utc(r.device.created_at),
+            last_seen=as_utc(r.device.updated_at),
+            last_trip_id=r.device.last_trip_id,
+            batches=r.device.batch_count,
+            samples=r.device.sample_count,
+            sample_rate_hz=r.device.sample_rate_hz,
+            warnings=r.device.warning_count,
+            gps_fixes=r.device.gps_fix_count,
+            detections=r.detections,
+            clusters=r.clusters,
+            confirmed_clusters=r.confirmed_clusters,
+            mean_severity=_round(r.mean_severity, 1),
+            max_severity=_round(r.max_severity, 1),
+            mean_confidence=_round(r.mean_confidence, 3),
+            mean_gps_error_m=_round(r.mean_gps_error_m, 1),
+        )
+        for r in device_rows(session)
+    ]
 
 
 class ReportRequest(BaseModel):

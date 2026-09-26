@@ -105,3 +105,27 @@ class ClusterOut(BaseModel):
     first_seen: datetime
     last_seen: datetime
     service_request_id: str | None = None
+
+
+class DeviceOut(BaseModel):
+    """One phone in the fleet: is it working, and what has it found."""
+
+    device_id: str
+    activity: Literal["active", "idle", "offline"]
+    first_seen: datetime
+    last_seen: datetime
+    last_trip_id: str
+    batches: int
+    samples: int
+    sample_rate_hz: float = Field(
+        ..., description="Effective IMU rate of the latest batch"
+    )
+    warnings: int = Field(..., description="Detector warnings on the latest batch")
+    gps_fixes: int = Field(..., description="GPS fixes in the latest batch")
+    detections: int
+    clusters: int
+    confirmed_clusters: int
+    mean_severity: float | None = None
+    max_severity: float | None = None
+    mean_confidence: float | None = None
+    mean_gps_error_m: float | None = None
