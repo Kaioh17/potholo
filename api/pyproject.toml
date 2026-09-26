@@ -1,0 +1,9 @@
+[tool.fastapi]
+entrypoint = "app.main:app"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "FAST"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
