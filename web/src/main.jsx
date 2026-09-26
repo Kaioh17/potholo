@@ -7,6 +7,7 @@ import './styles/global.css'
 import './styles/landing.css'
 import './styles/login.css'
 import './styles/map.css'
+import './styles/admin.css'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
