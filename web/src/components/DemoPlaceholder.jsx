@@ -1,4 +1,5 @@
-import { DeviceMobile } from '@phosphor-icons/react'
+import { Link } from 'react-router-dom'
+import { Car } from '@phosphor-icons/react'
 import Reveal from './Reveal.jsx'
 
 export default function DemoPlaceholder() {
@@ -7,7 +8,7 @@ export default function DemoPlaceholder() {
       <div className="wrap">
         <Reveal className="section__head">
           <p className="eyebrow">Demo</p>
-          <h2 id="demo-title">A live walkthrough is on the way.</h2>
+          <h2 id="demo-title">See a pothole hit from the car's side.</h2>
         </Reveal>
 
         <Reveal className="window" index={1}>
@@ -18,14 +19,16 @@ export default function DemoPlaceholder() {
           </div>
           <div className="window__body">
             <span className="icon-chip icon-chip--amber">
-              <DeviceMobile size={22} weight="bold" aria-hidden="true" />
+              <Car size={22} weight="bold" aria-hidden="true" />
             </span>
-            <h3>Interactive demo arrives with the Android app</h3>
+            <h3>A simulated drive</h3>
             <p>
-              Once the app is ready you will be able to ride along with a simulated trip, watch the
-              gyroscope trace react to a pothole, and see the record appear on the map.
+              Watch a car drop into a pothole in slow motion, with mock phone readings beside it.
+              Live phone data and the map arrive with the Android app.
             </p>
-            <span className="tag tag--amber">Coming soon</span>
+            <Link to="/demo" className="btn">
+              Open the demo
+            </Link>
           </div>
         </Reveal>
       </div>
