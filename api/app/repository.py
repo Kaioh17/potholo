@@ -21,7 +21,9 @@ from app.detection.cluster import (
     evaluate_status,
 )
 from app.detection.locate import metres_between
+from app.devices import record_device
 from app.models.detection import ClusterPass, PotholeCluster, PotholeDetection
+from app.schemas import BatchResult, SensorBatch
 from app.schemas import Detection as DetectionSchema
 
 DEG_LAT_M = 111_320.0
@@ -173,3 +175,18 @@ def list_clusters(
         stmt = stmt.where(PotholeCluster.status == status)
     rows = list(session.scalars(stmt))
     return sorted(rows, key=lambda c: (-c.confidence, -c.severity))
+
+
+def store_batch(session: Session, batch: SensorBatch, result: BatchResult) -> None:
+    """Persist everything one processed batch contributes. The caller commits.
+
+    The HTTP route and the seed script both go through here, so a seeded
+    database is built by exactly the code a phone upload runs.  Anything the
+    route learns to record has to land in this function, not next to it.
+    """
+    # Passes first: a trip that drove past an existing cluster without hitting
+    # anything is evidence too, and it has to land before the hit rate is read.
+    record_passes(session, batch.trip_id, batch.gps)
+    for det in result.detections:
+        add_detection(session, det)
+    record_device(session, batch, result)

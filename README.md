@@ -148,3 +148,12 @@ Never commit it.
 | --- | --- |
 | `POTHOLO_DATABASE_URL` | Database connection URL |
 | `CHI311_API_KEY` | Chicago Open311 key, required before anything can be filed |
+
+## Publishing a branch
+
+Two helper scripts keep history linear.
+Neither is run for you.
+
+- `scripts/push.sh` rebases the current feature branch onto the latest `main` and pushes it with `--force-with-lease`.
+- `scripts/merge.sh` does the same rebase, then fast-forwards `main` to the branch and pushes `main`.
+  It asks before updating `main`, and `--yes` skips the question.

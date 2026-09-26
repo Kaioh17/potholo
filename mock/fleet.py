@@ -9,6 +9,7 @@ phones that confirm a pothole together, one that only sees a candidate, phones o
 smooth roads that find nothing, and phones sampling too slowly to see a strike.
 Every payload is in the wire format a real phone sends.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -39,8 +40,10 @@ FLEET = [
 
 def post(path: str, body: dict) -> dict:
     req = urllib.request.Request(
-        API + path, data=json.dumps(body).encode(),
-        headers={"content-type": "application/json"}, method="POST",
+        API + path,
+        data=json.dumps(body).encode(),
+        headers={"content-type": "application/json"},
+        method="POST",
     )
     with urllib.request.urlopen(req, timeout=120) as r:
         return json.loads(r.read())
@@ -50,13 +53,25 @@ def main(trips: int) -> None:
     for i, (device, street, potholes, fs, depth) in enumerate(FLEET):
         for k in range(trips):
             raw = build_batch(
-                device_id=device, trip_id=f"{device}-trip-{k}", duration_s=40, fs=fs,
-                speed=11.0, potholes=potholes, depth_m=depth or 0.08,
-                seed=1000 + i * 10 + k, start_lat=LAT + street * BLOCK, start_lon=LON,
+                device_id=device,
+                trip_id=f"{device}-trip-{k}",
+                duration_s=40,
+                fs=fs,
+                speed=11.0,
+                potholes=potholes,
+                depth_m=depth or 0.08,
+                seed=1000 + i * 10 + k,
+                start_lat=LAT + street * BLOCK,
+                start_lon=LON,
             )
-            res = post("/v1/batches", {k2: v for k2, v in raw.items() if not k2.startswith("_")})
-            print(f"{device:<24} trip {k}: {len(res['detections'])} detections, "
-                  f"{res['effective_rate_hz']:.0f} Hz, {len(res['warnings'])} warnings")
+            res = post(
+                "/v1/batches",
+                {k2: v for k2, v in raw.items() if not k2.startswith("_")},
+            )
+            print(
+                f"{device:<24} trip {k}: {len(res['detections'])} detections, "
+                f"{res['effective_rate_hz']:.0f} Hz, {len(res['warnings'])} warnings"
+            )
 
 
 if __name__ == "__main__":

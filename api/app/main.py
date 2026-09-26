@@ -7,11 +7,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.database import engine
 from app.models import Base
 from app.routers import detections, health
+from app.schema import check_schema
 
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
     Base.metadata.create_all(engine)
+    check_schema(engine)
     yield
 
 

@@ -26,17 +26,6 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "api"))
 sys.path.insert(0, str(ROOT / "mock"))
 
-from app.database import SessionLocal, engine  # noqa: E402
-from app.models import Base  # noqa: E402
-from app.models.detection import (  # noqa: E402
-    ClusterPass,
-    PotholeCluster,
-    PotholeDetection,
-)
-from app.models.scenario import ScenarioRun  # noqa: E402
-from app.pipeline import process_batch  # noqa: E402
-from app.repository import add_detection, record_passes  # noqa: E402
-from app.schemas import SensorBatch  # noqa: E402
 from phone import RoadEvent, build_batch  # noqa: E402
 from scenarios import (  # noqa: E402
     CATALOGUE,
@@ -49,6 +38,15 @@ from scenarios import (  # noqa: E402
 )
 from vehicles import FLEET  # noqa: E402
 
+from app.database import SessionLocal, engine  # noqa: E402
+from app.models import Base  # noqa: E402
+from app.models.detection import PotholeCluster  # noqa: E402
+from app.models.scenario import ScenarioRun  # noqa: E402
+from app.pipeline import process_batch  # noqa: E402
+from app.repository import store_batch  # noqa: E402
+from app.schema import check_schema  # noqa: E402
+from app.schemas import SensorBatch  # noqa: E402
+
 RULE = "-" * 78
 
 
@@ -56,11 +54,15 @@ def to_batch(raw: dict) -> SensorBatch:
     return SensorBatch(**{k: v for k, v in raw.items() if not k.startswith("_")})
 
 
-def reset(session) -> None:
-    """Clear generated data, leaving the schema alone."""
-    for model in (ClusterPass, PotholeDetection, PotholeCluster, ScenarioRun):
-        session.query(model).delete()
-    session.commit()
+def reset() -> None:
+    """Drop and recreate every table.
+
+    The database only holds generated data, and clearing rows is not enough:
+    `create_all` never alters a table that already exists, so a database created
+    before a model changed keeps its old columns until the table is rebuilt.
+    """
+    Base.metadata.drop_all(engine)
+    Base.metadata.create_all(engine)
 
 
 # --------------------------------------------------------------------------- #
@@ -90,7 +92,8 @@ def run_catalogue(session) -> list[ScenarioRun]:
             start_lat=lat,
             start_lon=lon,
         )
-        result = process_batch(to_batch(raw))
+        batch = to_batch(raw)
+        result = process_batch(batch)
         observed = len(result.detections)
 
         if sc.expect_potholes is None:
@@ -132,9 +135,7 @@ def run_catalogue(session) -> list[ScenarioRun]:
 
         # Catalogue detections are persisted too, so the map shows the edge
         # cases rather than only the tidy corridor.
-        record_passes(session, raw["trip_id"], to_batch(raw).gps)
-        for det in result.detections:
-            add_detection(session, det)
+        store_batch(session, batch, result)
         session.commit()
         print("  " + run.summary())
     return runs
@@ -176,9 +177,7 @@ def run_corridor(session) -> None:
         )
         batch = to_batch(raw)
         result = process_batch(batch)
-        record_passes(session, batch.trip_id, batch.gps)
-        for det in result.detections:
-            add_detection(session, det)
+        store_batch(session, batch, result)
         session.commit()
         print(
             f"  {vehicle.name:<6} at {speed:4.1f} m/s -> "
@@ -201,9 +200,7 @@ def run_corridor(session) -> None:
         )
         batch = to_batch(raw)
         result = process_batch(batch)
-        record_passes(session, batch.trip_id, batch.gps)
-        for det in result.detections:
-            add_detection(session, det)
+        store_batch(session, batch, result)
         session.commit()
     print(f"  {CORRIDOR_CLEAN_TRIPS} clean trips recorded as passes")
 
@@ -253,20 +250,23 @@ def report(session, runs: list[ScenarioRun]) -> int:
 def main() -> int:
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument(
-        "--reset", action="store_true", help="clear previously seeded rows first"
+        "--reset",
+        action="store_true",
+        help="drop and recreate every table first, which also fixes an old schema",
     )
     p.add_argument("--catalogue-only", action="store_true")
     args = p.parse_args()
 
+    if args.reset:
+        reset()
     Base.metadata.create_all(engine)
+    check_schema(engine)
     print("Fleet:")
     for v in FLEET.values():
         print("  " + v.describe())
     print()
 
     with SessionLocal() as session:
-        if args.reset:
-            reset(session)
         runs = run_catalogue(session)
         if not args.catalogue_only:
             run_corridor(session)
