@@ -12,16 +12,14 @@ Readings are collected on the phone, sent to a FastAPI service, and turned into 
 ## Architecture
 
 The final product is a React Native app plus a backend.
-This repository is the prototype, and it has two parts.
+This repository is the prototype.
 
 | Part | Status | Notes |
 | --- | --- | --- |
-| Web app (`web/`) | In progress | React landing page and login. It will later host a demo. |
+| Web app (`web/`) | In progress | React landing page, login, and a simulated pothole demo. |
 | Data processing API (`api/`) | Working | FastAPI. Ingest, detection, clustering, CDOT reporting. |
 | Mock phone (`mock/`) | Working | Sedan, SUV, semi and bus, in the real phone wire format. |
 | Real drive data (`data/`) | Working | 418s of instrumented drive, recovered from a screen recording. |
-| Web app (`web/`) | In progress | React landing page, login, and a simulated pothole demo. |
-| Data processing API | Planned | FastAPI. This is real, not mocked. |
 | Mobile app | Not started | React Native. Out of scope for the prototype. |
 
 ## How detection works
