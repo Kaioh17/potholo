@@ -34,6 +34,7 @@ class PotholeCluster(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     detection_count: Mapped[int] = mapped_column(Integer, default=0)
     device_count: Mapped[int] = mapped_column(Integer, default=0)
     pass_count: Mapped[int] = mapped_column(Integer, default=0)
+    detecting_trip_count: Mapped[int] = mapped_column(Integer, default=0)
     service_request_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
 
     detections: Mapped[list[PotholeDetection]] = relationship(
@@ -49,7 +50,15 @@ class PotholeCluster(UUIDPrimaryKeyMixin, TimestampMixin, Base):
 
     @property
     def hit_rate(self) -> float:
-        return self.detection_count / self.pass_count if self.pass_count else 0.0
+        """Share of the vehicles that drove over this spot which felt something.
+
+        Counted in distinct trips, not in raw detections. A multi-axle vehicle
+        can strike one hole several times, and dividing strikes by passes let a
+        single semi report a 200% hit rate.
+        """
+        if not self.pass_count:
+            return 0.0
+        return min(1.0, self.detecting_trip_count / self.pass_count)
 
 
 class PotholeDetection(UUIDPrimaryKeyMixin, TimestampMixin, Base):

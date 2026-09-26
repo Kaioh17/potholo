@@ -123,12 +123,25 @@ def to_vertical(
 def bandpass(
     x: np.ndarray, fs: float, band: tuple[float, float] = DEFAULT_BAND
 ) -> tuple[np.ndarray, list[str]]:
-    """Isolate the impact band.
+    """Isolate the impact band, with a causal filter.
 
     Below ~2 Hz is the car's sprung mass rocking on its springs -- hills,
     braking, ordinary ride motion.  Above ~20 Hz is tyre and engine hash plus
     the phone rattling in its holder.  A wheel dropping into a pothole rings the
     unsprung mass at roughly 8-15 Hz, which sits between the two.
+
+    Causal (`sosfilt`) rather than zero-phase (`sosfiltfilt`), which costs about
+    30 ms of group delay and is worth every millisecond.  Zero-phase filtering
+    runs the filter backwards as well as forwards, so it smears energy *before*
+    the event that caused it: a purely upward kick -- a raised expansion joint,
+    a rail lip -- comes out with a negative lobe in front of it, around 15% of
+    the peak.  That is indistinguishable from the drop that precedes a real
+    pothole strike, and it made the detector report every bridge joint on the
+    route.  A causal filter cannot produce output before its input, so the drop
+    the shape test looks for is only ever a real one.
+
+    It is also what an on-device implementation would have to use, so the
+    offline and streaming versions now behave identically.
     """
     warnings: list[str] = []
     lo, hi = band
@@ -159,8 +172,7 @@ def bandpass(
                 f"impact band truncated to {lo:.1f}-{hi:.1f} Hz by a {fs:.1f} Hz rate"
             )
         sos = signal.butter(4, [lo / nyq, hi / nyq], "bandpass", output="sos")
-    pad = min(len(x) - 1, 3 * 8)
-    return signal.sosfiltfilt(sos, x, padlen=pad), warnings
+    return signal.sosfilt(sos, x), warnings
 
 
 def adaptive_z(

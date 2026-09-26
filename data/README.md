@@ -70,10 +70,15 @@ recorded the car's ride, not its impacts. See `docs/detection-model.md`.
 The 500 MB source video is not in the repository. With it available:
 
 ```bash
-ffmpeg -i "Recording 2024-11-29 120451.mp4" -vf "fps=1,crop=1890:900:10:100" frames/f_%04d.png
-python data/analysis/digitize_plotter_video.py frames/
-python data/analysis/stitch_windows.py
+mkdir -p work/frames
+ffmpeg -i "Recording 2024-11-29 120451.mp4"        -vf "fps=1,crop=1890:900:10:100" work/frames/f_%04d.png
+python data/analysis/digitize_plotter_video.py work/frames/
+python data/analysis/stitch_windows.py work/
 ```
+
+`digitize_plotter_video.py` writes `frames.npy` beside the frame directory;
+`stitch_windows.py` reads it from the directory given to it and writes
+`series_raw.npy` there.
 
 ## Columns
 

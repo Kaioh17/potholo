@@ -53,6 +53,7 @@ def refresh(session: Session, cluster: PotholeCluster) -> None:
     dets = cluster.detections
     cluster.detection_count = len(dets)
     cluster.device_count = len({d.device_id for d in dets})
+    cluster.detecting_trip_count = len({d.trip_id for d in dets})
     cluster.pass_count = max(len(cluster.passes), len({d.trip_id for d in dets}))
 
     if dets:

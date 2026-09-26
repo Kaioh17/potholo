@@ -34,7 +34,7 @@ a 3.8% error that would otherwise have gone straight into every severity.
 
 ## 2. Keep only the band a pothole lives in
 
-A 2–20 Hz Butterworth band-pass, applied zero-phase.
+A 2–20 Hz Butterworth band-pass, applied **causally**.
 
 - **Below 2 Hz** is the car's sprung mass rocking on its springs — hills,
   braking, ordinary ride motion. On the real drive this is where 74% of the
@@ -43,6 +43,21 @@ A 2–20 Hz Butterworth band-pass, applied zero-phase.
 - **Above 20 Hz** is tyre and engine hash plus the phone rattling in its holder.
 - **Between them**, around **8–15 Hz**, the unsprung mass (wheel and hub) rings
   when it is struck. That ring is the pothole.
+
+Causal (`sosfilt`) rather than zero-phase (`sosfiltfilt`), at a cost of about
+30 ms of group delay. Zero-phase filtering runs the filter backwards as well as
+forwards, so it smears energy **before** the event that caused it: a purely
+upward kick — a raised expansion joint, a rail lip — comes out with a negative
+lobe in front of it, measured at about **15% of the peak**. That is
+indistinguishable from the drop preceding a real pothole strike, and it made the
+detector report every bridge joint on the route. A causal filter cannot produce
+output before its input, so a drop the shape test finds is only ever a real one.
+It is also what an on-device implementation must use, so the offline and
+streaming versions now behave identically.
+
+The **shape test** reads a wider band, 1–20 Hz. A long crater unloads the
+suspension slowly — a 1.4 m hole at 11 m/s falls for 130 ms, around 4 Hz — and a
+2 Hz corner flattens that drop while leaving the 11 Hz strike untouched.
 
 ## 3. Score against the road you are on, not a fixed number
 
@@ -59,17 +74,16 @@ that stands out **from its surroundings** — which is what a road crew is
 actually looking for. The MAD is floored so a perfectly smooth stretch cannot
 turn sensor noise into infinite scores.
 
-## 4. Check the shape: a drop, then a strike
+## 4. Check the shape: quiet, then a drop, then a strike
 
-This is the step that separates a pothole from a speed bump, and it follows
-from the sign convention.
+This is the step that separates a pothole from everything else that also ends in
+a bang, and it follows from the sign convention.
 
 An accelerometer reads **+g along "up"** at rest. So when a wheel drops into a
 hole the body unloads first and `a_vert` goes **negative** — bounded at about
 **−1 g**, because a wheel cannot fall faster than gravity. Only then does it
 strike the far edge, which has no such bound and throws `a_vert` sharply
-**positive**. A speed bump or a manhole cover lifts the wheel first and produces
-the same two lobes **in the opposite order**.
+**positive**.
 
 The real drive contains a textbook example at t = 347.8 s:
 
@@ -85,12 +99,34 @@ and the synthetic equivalent at 100 Hz, where the bound on the drop is visible:
        └──── drop, floors near −1 g ────┘   └─ strike, unbounded ─┘
 ```
 
-**The ordering must be read from the onset, not from the window extremes.** A
-strike rings the suspension for several cycles, so the largest negative sample
-in a window is usually a *later lobe of that ring*, not the initial unloading.
-Taking `argmin`/`argmax` over the whole window reads the sequence backwards and
-classifies every pothole as a speed bump — it did, until the detector was
-changed to walk back to where the disturbance began.
+Three things had to be got right here. Each was wrong first, and each was caught
+by the synthetic fleet rather than by reasoning about it.
+
+**Anchor on the strike, not on an "onset".** Between the drop and the strike the
+signal passes through zero — it must, they have opposite signs. A walk-back that
+follows a contiguous run above a threshold stops dead at that crossing, sees only
+the strike, and calls every pothole a bump. Whether it happened to stop depended
+on where the crossing sample landed, which is to say **on the vehicle's speed**:
+the same pothole was found at 9, 13 and 16 m/s and missed at 11.
+
+**The drop threshold is absolute, not a fraction of the strike.** The drop cannot
+exceed 1 g however bad the hole is; the strike has no ceiling and grows with
+depth and speed. Scaling the requirement to the strike therefore gets *stricter*
+exactly as the pothole gets worse — an 18 cm crater threw a 44 m/s² strike behind
+a 5 m/s² drop and was discarded for having too small a drop, while gentler holes
+passed. The bar is now a flat 1.5 m/s², about 15% of g.
+
+**A drop before a strike is not enough, because a speed bump ends the same way.**
+The wheel is lifted, goes light over the crest, and comes down hard — drop then
+strike, exactly like a pothole. What differs is what happened *before* the drop.
+A pothole is preceded by quiet road; a bump is preceded by the lift that put the
+wheel up there, and a raised joint by the kick off its leading edge. So the test
+is **quiet, drop, strike**, and a preceding positive excursion above 0.3 × the
+drop vetoes it.
+
+That look-back has to reach outside the event window. One physical bump raises
+several detection peaks, and the later ones begin *after* the lift — a look-back
+clipped to the window finds nothing and passes the bump through as a pothole.
 
 Three gates then reject shocks the *vehicle* caused rather than the road:
 speed outside 4–35 m/s, yaw rate above 0.9 rad/s (cornering), or lateral
@@ -98,10 +134,21 @@ acceleration above 6 m/s² (braking or swerving).
 
 ### The axle echo
 
-A car hits the same hole twice, front axle then rear, separated by
-`wheelbase / speed` — about 0.25 s at 11 m/s. The pair is merged into one
-detection, and its presence is corroborating evidence: a phone knocked off a
-seat does not produce a second strike at exactly the wheelbase interval.
+A vehicle hits the same hole once per axle: twice for a car, **five times for a
+tractor-trailer** whose axles span 13 m. Strikes within 15 m of travel are one
+defect — measured in metres rather than seconds so it holds at any speed, and set
+just past the longest legal axle spread. Two holes closer than the 12 m cluster
+radius land in the same cluster whatever we do here.
+
+The group is judged by its **leading** strike. Only the first axle meets the
+feature with undisturbed road behind it; every axle after it is preceded by the
+one in front still ringing, and that ring reads as the lift that marks a speed
+bump. Judging a group by its worst verdict instead threw away every pothole a
+semi or a bus ever hit, because their trailing axles always look like bumps.
+
+A residual bias worth knowing about: the phone rides in the cab, so a strike
+under a trailer axle is recorded at the cab's position, **up to 13 m past the
+hole**. Merging keeps it to one detection but cannot recover where the wheel was.
 
 ## 5. Severity that survives being measured by a different phone
 
@@ -170,7 +217,7 @@ Reproduce all of this with `python data/analysis/validate.py`.
 | pothole | 7 m/s | 11 m/s | 16 m/s |
 | --- | --- | --- | --- |
 | shallow (3 cm) | 100% | 100% | 100% |
-| moderate (6 cm) | 100% | 100% | 88% |
+| moderate (6 cm) | 100% | 100% | 100% |
 | deep (10 cm) | 100% | 100% | 100% |
 
 **False positives** — 7.9 km per row, no pothole present:
@@ -184,6 +231,10 @@ Reproduce all of this with `python data/analysis/validate.py`.
 The adaptive threshold is what holds the last row at zero: rough pavement raises
 its own bar instead of generating a report every few metres.
 
+**The scenario catalogue** — 31 labelled test and edge cases across four vehicle
+classes, run by `python mock/seed_db.py --reset`. 26 of 27 scored cases pass and
+4 are recorded without an asserted answer. See `docs/synthetic-fleet.md`.
+
 ## Why the phone must sample at 100 Hz
 
 The 2024-11-29 rig logged at **8.34 Hz** — `delay(100)` plus I²C and serial
@@ -195,14 +246,19 @@ The same 8 cm pothole, sampled at different rates (the signal is synthesised at
 500 Hz and decimated without an anti-alias filter, so low rates alias exactly as
 a sketch reading the register once per loop would):
 
-| rate | detected | severity | Δv (m/s) | |
+| rate | detected | severity | dv (m/s) | |
 | --- | --- | --- | --- | --- |
-| 200 Hz | 1 | 73.4 | 0.541 | |
-| 100 Hz | 1 | 71.1 | 0.507 | |
-| 50 Hz | 1 | 50.7 | 0.288 | severity understated |
-| 25 Hz | 1 | 54.4 | 0.324 | |
-| 12.5 Hz | 1 | 31.4 | 0.154 | aliased |
-| 8.34 Hz | 3 | 39.1 | 0.203 | aliased, fragmented into three |
+| 200 Hz | 1 | 64.2 | 0.420 | |
+| 100 Hz | 1 | 63.1 | 0.408 | |
+| 50 Hz | 1 | 42.6 | 0.227 | severity understated by a third |
+| 25 Hz | 0 | — | — | missed entirely |
+| 12.5 Hz | 1 | 27.3 | 0.132 | aliased |
+| 8.34 Hz | 1 | 76.8 | 0.600 | aliased, and now *over*-reads |
+
+Below 50 Hz the result stops being wrong in a predictable direction and simply
+becomes erratic — 25 Hz loses the pothole altogether, while the rig's own
+8.34 Hz reports it as worse than it is. Aliasing does not attenuate a signal
+politely; it folds it somewhere unpredictable.
 
 100 Hz reads the same as 200 Hz, so 100 Hz is enough — and it is what
 `SENSOR_DELAY_FASTEST` gives on essentially every Android handset, with iOS

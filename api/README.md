@@ -38,6 +38,16 @@ curl http://127.0.0.1:8000/v1/clusters
 A cluster needs 3 distinct devices, 4 detections and a 35% hit rate before it is
 confirmed, so post batches with several `device_id` values to see one confirm.
 
+To fill the database in one go, with a fleet of sedans, SUVs, a semi and a bus
+driven over a labelled catalogue of test and edge cases:
+
+```bash
+python ../mock/seed_db.py --reset
+```
+
+That also scores the detector against the catalogue and stores the outcome of
+each scenario in `scenario_runs`. See `../docs/synthetic-fleet.md`.
+
 ## Setup
 
 Requires Python 3.12 or newer.
@@ -83,6 +93,9 @@ app/
   config.py       settings
   database.py     engine, session, SessionDep
   models/         SQLAlchemy models (base.py has Base and the UUID and timestamp mixins)
+    detection.py    clusters, detections and the passes that give the hit rate
+                    its denominator
+    scenario.py     one row per synthetic scenario: expected beside observed
   routers/        route modules
   detection/      the signal processing and decision logic
     signal_ops.py   orientation, band-pass, adaptive threshold

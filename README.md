@@ -18,7 +18,7 @@ This repository is the prototype, and it has two parts.
 | --- | --- | --- |
 | Web app (`web/`) | In progress | React landing page and login. It will later host a demo. |
 | Data processing API (`api/`) | Working | FastAPI. Ingest, detection, clustering, CDOT reporting. |
-| Mock phone (`mock/`) | Working | Generates payloads in the real phone wire format. |
+| Mock phone (`mock/`) | Working | Sedan, SUV, semi and bus, in the real phone wire format. |
 | Real drive data (`data/`) | Working | 418s of instrumented drive, recovered from a screen recording. |
 | Mobile app | Not started | React Native. Out of scope for the prototype. |
 
@@ -39,6 +39,8 @@ volume.
 
 `docs/detection-model.md` has the full method, the measured detection and
 false-positive rates, and the evidence behind the 100 Hz sampling requirement.
+`docs/synthetic-fleet.md` covers the four vehicle classes and the labelled
+scenario catalogue they are exercised with.
 
 ### What is mocked
 
@@ -57,6 +59,9 @@ potholo/
   web/            React web app (Vite)
   api/            FastAPI service: ingest, detection, clustering, CDOT reporting
   mock/           Mock phone sensor generator, kept out of the API
+                  vehicles.py  quarter-car models for sedan, SUV, semi, bus
+                  scenarios.py labelled test and edge cases
+                  seed_db.py   runs them all and populates the database
   data/           Real instrumented drive, plus the scripts that recovered it
   docs/           Detection model and evidence
   CLAUDE.md       Instructions for coding agents
@@ -105,6 +110,13 @@ To reproduce the detection and false-positive numbers:
 
 ```bash
 python data/analysis/validate.py
+```
+
+To fill the database with a synthetic fleet and score the detector against 31
+labelled test and edge cases:
+
+```bash
+python mock/seed_db.py --reset
 ```
 
 ## Design
