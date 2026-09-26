@@ -1,0 +1,31 @@
+:root {
+  color-scheme: light;
+
+  --canvas: #f7f6f3;
+  --surface: #ffffff;
+  --surface-alt: #f9f9f8;
+  --ink: #111111;
+  --ink-soft: #2f3437;
+  --muted: #787774;
+  --border: #eaeaea;
+
+  /* Road-marking amber: the single accent. */
+  --amber: #f2b705;
+  --amber-pale: #fbf3db;
+  --amber-ink: #956400;
+
+  --red-pale: #fdebec;
+  --red-ink: #9f2f2d;
+  --blue-pale: #e1f3fe;
+  --blue-ink: #1f6c9f;
+  --green-pale: #edf3ec;
+  --green-ink: #346538;
+
+  --font-body: 'DM Sans', system-ui, sans-serif;
+  --font-brand: 'Fredoka', 'DM Sans', system-ui, sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', 'JetBrains Mono', monospace;
+
+  --radius-card: 12px;
+  --radius-btn: 6px;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+}

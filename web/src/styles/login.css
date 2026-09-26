@@ -1,0 +1,159 @@
+.login {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.login__top {
+  padding-block: 24px;
+}
+
+.login__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 0.9375rem;
+  text-decoration: none;
+}
+
+.login__back:hover {
+  color: var(--ink);
+}
+
+.login__main {
+  flex: 1;
+  display: grid;
+  place-items: start center;
+  padding: 24px 16px 96px;
+}
+
+.login__card {
+  width: 100%;
+  max-width: 420px;
+  padding: 36px 32px 32px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+}
+
+.login__card h1 {
+  margin-top: 32px;
+  font-size: 1.75rem;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.login__sub {
+  margin-top: 6px;
+  color: var(--muted);
+}
+
+.login form {
+  margin-top: 28px;
+  display: grid;
+  gap: 20px;
+}
+
+.field label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.field input {
+  width: 100%;
+  padding: 11px 12px;
+  border: 1px solid #d8d7d3;
+  border-radius: var(--radius-btn);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 1rem;
+  transition: border-color 200ms var(--ease);
+}
+
+.field input::placeholder {
+  color: #a3a29e;
+}
+
+.field input:hover {
+  border-color: #b9b8b4;
+}
+
+.field input:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 1px;
+  border-color: var(--ink);
+}
+
+.field input[aria-invalid='true'] {
+  border-color: var(--red-ink);
+}
+
+.field__wrap {
+  position: relative;
+}
+
+.field__wrap input {
+  padding-right: 44px;
+}
+
+.field__toggle {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 44px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+  border-radius: 0 var(--radius-btn) var(--radius-btn) 0;
+}
+
+.field__toggle:hover {
+  color: var(--ink);
+}
+
+.field__error {
+  margin-top: 6px;
+  color: var(--red-ink);
+  font-size: 0.875rem;
+}
+
+.login__submit {
+  width: 100%;
+  margin-top: 4px;
+  padding-block: 14px;
+}
+
+.login__notice {
+  min-height: 0;
+}
+
+.login__notice p {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  padding: 12px 14px;
+  background: var(--amber-pale);
+  color: var(--amber-ink);
+  border-radius: var(--radius-btn);
+  font-size: 0.9375rem;
+  line-height: 1.45;
+}
+
+.login__notice svg {
+  flex: none;
+  margin-top: 2px;
+}
+
+@media (max-width: 480px) {
+  .login__card {
+    padding: 28px 20px 24px;
+  }
+}
