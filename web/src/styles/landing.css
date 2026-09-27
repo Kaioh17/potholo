@@ -105,6 +105,93 @@
   fill: #9a9994;
 }
 
+/* Gyro trace draws itself in once the hero art scrolls into view. */
+.scene__trace {
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+}
+
+.reveal.is-visible .scene__trace {
+  animation: scene-trace-draw 1.4s var(--ease) forwards;
+}
+
+.scene__label--pulse {
+  animation: scene-label-pulse 2.4s ease-in-out infinite;
+}
+
+/* The road surface reads as a live sensor grid: a wave of gyro data keeps
+   scrolling across it, under the car, the way a real reading would stream in. */
+.scene__wave {
+  animation: scene-wave-scroll 2.6s linear infinite;
+}
+
+.scene__lanes line {
+  animation: scene-lane-scroll 1.1s linear infinite;
+}
+
+.scene__pin {
+  animation: scene-pin-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes scene-trace-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes scene-label-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+
+@keyframes scene-wave-scroll {
+  from {
+    transform: translate(0, 368px);
+  }
+  to {
+    transform: translate(-60px, 368px);
+  }
+}
+
+@keyframes scene-lane-scroll {
+  from {
+    stroke-dashoffset: 0;
+  }
+  to {
+    stroke-dashoffset: -48;
+  }
+}
+
+@keyframes scene-pin-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scene__trace {
+    stroke-dashoffset: 0;
+  }
+  .reveal.is-visible .scene__trace {
+    animation: none;
+  }
+  .scene__label--pulse,
+  .scene__wave,
+  .scene__lanes line,
+  .scene__pin {
+    animation: none;
+  }
+}
+
 @media (max-width: 900px) {
   .hero {
     padding-block: 56px 72px;
@@ -419,12 +506,6 @@
   font-size: 0.9375rem;
 }
 
-/* Demo page */
-.wrap--wide {
-  max-width: 1440px;
-  padding-inline: clamp(24px, 6vw, 96px);
-}
-
 .nav__links a[aria-current='page'] {
   color: var(--ink);
 }
@@ -435,6 +516,19 @@
 
 .demo__back {
   margin-bottom: 24px;
+}
+
+.demo__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+@media (max-width: 560px) {
+  .demo__top {
+    flex-wrap: wrap;
+  }
 }
 
 .demo__head {
@@ -455,23 +549,23 @@
 }
 
 .demo__grid {
-  /* A fixed height, so the layout does not grow or shrink with what the recording shows. */
-  height: 900px;
   display: grid;
-  grid-template-columns: minmax(0, 7fr) minmax(300px, 3fr);
+  /* Both columns size to their own content, so the square canvas sets the
+     stage's height and the stage card never carries dead space around it. */
+  grid-template-columns: minmax(0, 760px) minmax(300px, 1fr);
   gap: 32px;
-  align-items: stretch;
+  align-items: start;
+  justify-content: center;
 }
 
 .demo__stage {
   display: flex;
   flex-direction: column;
-  min-height: 0;
 }
 
 .demo__canvas {
-  flex: 1;
-  min-height: 0;
+  width: 100%;
+  aspect-ratio: 1 / 1;
   background: var(--canvas);
 }
 
@@ -490,8 +584,6 @@
 }
 
 .recording {
-  min-height: 0;
-  overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -702,13 +794,31 @@
   font-size: 0.8125rem;
 }
 
+.recording__cta {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  background: var(--amber-pale);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-btn);
+}
+
+.recording__cta-text {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 0.875rem;
+}
+
+.recording__cta .btn {
+  justify-self: start;
+}
+
 @media (max-width: 1000px) {
   .demo__grid {
-    height: auto;
     grid-template-columns: minmax(0, 1fr);
   }
   .demo__canvas {
-    flex: none;
-    height: 340px;
+    width: min(100%, 420px);
+    margin-inline: auto;
   }
 }

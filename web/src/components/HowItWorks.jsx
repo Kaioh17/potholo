@@ -4,18 +4,18 @@ import Reveal from './Reveal.jsx'
 const STEPS = [
   {
     icon: DeviceMobile,
-    title: 'The phone listens',
-    body: 'The Potholo app samples the gyroscope and accelerometer while a driver is on the road. Everything runs on the phone.',
+    title: 'The phone streams',
+    body: 'The Potholo app samples the gyroscope and accelerometer while a driver is on the road, and sends the raw readings on. No detection happens on the phone.',
   },
   {
     icon: Pulse,
-    title: 'A jolt is flagged',
-    body: 'A sharp, short spike that does not match speed bumps, rail crossings or braking is marked as a pothole candidate.',
+    title: 'The API flags a jolt',
+    body: 'A FastAPI service looks for a sharp, short spike that does not match speed bumps, rail crossings or braking, and marks it a pothole candidate.',
   },
   {
     icon: Cpu,
-    title: 'The API checks it',
-    body: 'A FastAPI service compares candidates with location, speed, time and reports from other phones on the same stretch.',
+    title: 'Reports are cross-checked',
+    body: 'Each candidate is compared with location, speed, time and reports from other phones on the same stretch, so one odd reading cannot become a record on its own.',
   },
   {
     icon: MapPinLine,

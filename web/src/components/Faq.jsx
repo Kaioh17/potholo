@@ -13,7 +13,7 @@ const ITEMS = [
   },
   {
     q: 'What happens to my data?',
-    a: 'Detection runs on the phone. Only pothole candidates, with time and location, are sent for processing. Privacy details will be published before any public release.',
+    a: 'Detection runs on our servers, not the phone. The phone only streams raw accelerometer and gyroscope readings, plus time and location, and the API alone decides what counts as a pothole. Privacy details will be published before any public release.',
   },
   {
     q: 'Where does it work?',
@@ -21,7 +21,7 @@ const ITEMS = [
   },
   {
     q: 'Can I try it today?',
-    a: 'Not yet. This site explains the idea. The demo and the Android app come next, and you can already sign in to see where accounts will live.',
+    a: 'Yes. Try it runs a simulated phone through a real drive and streams its readings to the real detection API, so you can watch a pothole get found and mapped. The Android app, reading a real phone’s sensors instead of a simulated one, comes next.',
   },
 ]
 
