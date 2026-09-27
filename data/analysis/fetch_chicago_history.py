@@ -25,6 +25,7 @@ import csv
 import io
 import json
 import sys
+from datetime import date, timedelta
 import urllib.parse
 import urllib.request
 from pathlib import Path
@@ -37,6 +38,11 @@ SODA = "https://data.cityofchicago.org/resource"
 # the two would put a reporting-process change in the middle of the series and
 # read it as a change in the roads.
 START, END = "2011-01-01", "2018-12-31"
+
+# The window the forecast page draws. ERA5 reanalysis lags real time by about
+# five days, so the end is pulled back a fortnight to stay inside the archive.
+RECENT_START = (date.today() - timedelta(days=365 * 4)).isoformat()
+RECENT_END = (date.today() - timedelta(days=14)).isoformat()
 
 
 def _fetch(url: str, dest: Path, binary: bool = False) -> Path:
@@ -132,6 +138,31 @@ def weather() -> Path:
     )
 
 
+def recent_weather() -> Path:
+    """Chicago weather over the window the forecast page actually shows.
+
+    The 2011-2018 pull is for calibration: it is the span where the 311 pothole
+    dataset is complete, so it is the only window where weather and potholes can
+    be compared. But the map's timeline runs over the last three years, and
+    showing 2014's winter against 2025's potholes would be dishonest. This is the
+    real weather for the months on screen.
+    """
+    query = urllib.parse.urlencode(
+        {
+            "latitude": 41.8781,
+            "longitude": -87.6298,
+            "start_date": RECENT_START,
+            "end_date": RECENT_END,
+            "daily": "temperature_2m_max,temperature_2m_min,precipitation_sum,snowfall_sum",
+            "timezone": "America/Chicago",
+        }
+    )
+    return _fetch(
+        f"https://archive-api.open-meteo.com/v1/archive?{query}",
+        CACHE / "chicago_weather_recent.json",
+    )
+
+
 def traffic() -> Path:
     """Average daily traffic counts, with the coordinates to join them on."""
     return soda_csv(
@@ -147,8 +178,10 @@ def main() -> None:
     CACHE.mkdir(parents=True, exist_ok=True)
     print("311 pothole requests (2011-2018):")
     potholes()
-    print("Chicago daily weather:")
+    print("Chicago daily weather (calibration window):")
     weather()
+    print("Chicago daily weather (forecast display window):")
+    recent_weather()
     print("Average daily traffic counts:")
     traffic()
     print("\nAll sources cached in", CACHE)

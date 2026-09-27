@@ -133,6 +133,84 @@ def seasonal_hazard() -> dict:
     }
 
 
+def climate() -> dict:
+    """Per-month weather for the page: what the roads actually went through.
+
+    Two series, and the difference between them is the point:
+
+    - `actual`, keyed YYYY-MM, is the real Chicago weather over the window the
+      timeline covers. The past gets the winter it really had.
+    - `normal`, keyed by calendar month, is the 2011-2018 average. The future
+      gets this, because Q2 of the study found freeze-thaw day counts do not
+      rank winters by pothole volume -- so forecasting a *particular* winter
+      would be claiming skill the data says we do not have. An average winter is
+      the honest future.
+    """
+    print("\nMonthly climate")
+    print("-" * 60)
+
+    def monthly(path: Path) -> pd.DataFrame:
+        raw = json.loads(path.read_text())["daily"]
+        wx = pd.DataFrame(
+            {
+                "day": pd.to_datetime(raw["time"]),
+                "tmax": raw["temperature_2m_max"],
+                "tmin": raw["temperature_2m_min"],
+                "precip": raw["precipitation_sum"],
+                "snow": raw["snowfall_sum"],
+            }
+        )
+        wx["ft"] = ((wx.tmin < 0) & (wx.tmax > 0)).astype(int)
+        wx["wet"] = (wx.precip.fillna(0) > 0.5) | (wx.snow.fillna(0) > 0)
+        wx["driver"] = wx["ft"] * np.where(wx["wet"], 1.0, 0.35)
+        return wx
+
+    hist = monthly(CACHE / "chicago_weather.json")
+    # The damage index is normalised on the calibration window, so the same
+    # divisor has to be used for recent months or a mild year would look like a
+    # different climate rather than a mild year.
+    base = hist["driver"].mean()
+
+    def pack(frame: pd.DataFrame) -> dict:
+        return {
+            "ft_days": int(frame["ft"].sum()),
+            "precip_mm": round(float(frame["precip"].fillna(0).sum()), 1),
+            "snow_cm": round(float(frame["snow"].fillna(0).sum()), 1),
+            "tmin_c": round(float(frame["tmin"].mean()), 1),
+            "tmax_c": round(float(frame["tmax"].mean()), 1),
+            "damage_index": round(float(frame["driver"].mean() / base), 3),
+        }
+
+    normal = {}
+    for month, frame in hist.groupby(hist.day.dt.month):
+        years = frame.day.dt.year.nunique()
+        packed = pack(frame)
+        # Sums are over eight years of that month, so divide back to one month.
+        packed["ft_days"] = round(packed["ft_days"] / years, 1)
+        packed["precip_mm"] = round(packed["precip_mm"] / years, 1)
+        packed["snow_cm"] = round(packed["snow_cm"] / years, 1)
+        normal[MONTHS[month - 1]] = packed
+
+    recent = monthly(CACHE / "chicago_weather_recent.json")
+    actual = {
+        key.strftime("%Y-%m"): pack(frame)
+        for key, frame in recent.groupby(pd.Grouper(key="day", freq="MS"))
+        if len(frame) > 20  # drop a part-month at either end
+    }
+
+    print("climatological normal (2011-2018 average):")
+    for m in MONTHS:
+        n = normal[m]
+        print(f"  {m}  {n['ft_days']:>4.1f} FT days  {n['precip_mm']:>6.1f} mm  "
+              f"{n['snow_cm']:>5.1f} cm snow  {n['tmin_c']:>5.1f}..{n['tmax_c']:>4.1f} C  "
+              f"x{n['damage_index']:.2f}")
+    print(f"\nactual months available: {len(actual)} "
+          f"({min(actual)} to {max(actual)})")
+    worst = max(actual.items(), key=lambda kv: kv[1]["ft_days"])
+    print(f"hardest recent month: {worst[0]} with {worst[1]['ft_days']} freeze-thaw days")
+    return {"normal": normal, "actual": actual}
+
+
 def growth_rate(reopen: dict, findings: dict) -> dict:
     """The assumption, made explicit and bounded.
 
@@ -189,6 +267,7 @@ def main() -> None:
 
     reopen = reopen_interval(df)
     hazard = seasonal_hazard()
+    conditions = climate()
     growth = growth_rate(reopen, findings)
 
     repair = findings["q3_lifecycle"]
@@ -209,6 +288,7 @@ def main() -> None:
             "spring_share_sd": findings["q1_seasonality"]["spring_share_sd"],
         },
         "damage_driver": hazard,
+        "climate": conditions,
         "growth": growth,
         "repair": {
             "median_days_to_fill": repair["days_to_fill"]["p50"],

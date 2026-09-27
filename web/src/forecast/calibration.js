@@ -48,6 +48,484 @@ export default {
     "ft_days_per_year_min": 35,
     "ft_days_per_year_max": 96
   },
+  "climate": {
+    "normal": {
+      "Jan": {
+        "ft_days": 10.9,
+        "precip_mm": 53.3,
+        "snow_cm": 15.2,
+        "tmin_c": -7.4,
+        "tmax_c": -0.7,
+        "damage_index": 2.399
+      },
+      "Feb": {
+        "ft_days": 11.1,
+        "precip_mm": 66.2,
+        "snow_cm": 24.6,
+        "tmin_c": -7.2,
+        "tmax_c": 0.0,
+        "damage_index": 2.545
+      },
+      "Mar": {
+        "ft_days": 13.0,
+        "precip_mm": 64.4,
+        "snow_cm": 10.0,
+        "tmin_c": -1.6,
+        "tmax_c": 4.8,
+        "damage_index": 2.54
+      },
+      "Apr": {
+        "ft_days": 3.8,
+        "precip_mm": 111.3,
+        "snow_cm": 3.3,
+        "tmin_c": 3.7,
+        "tmax_c": 10.5,
+        "damage_index": 0.851
+      },
+      "May": {
+        "ft_days": 0.0,
+        "precip_mm": 119.8,
+        "snow_cm": 0.0,
+        "tmin_c": 10.8,
+        "tmax_c": 17.9,
+        "damage_index": 0.0
+      },
+      "Jun": {
+        "ft_days": 0.0,
+        "precip_mm": 107.7,
+        "snow_cm": 0.0,
+        "tmin_c": 16.6,
+        "tmax_c": 23.7,
+        "damage_index": 0.0
+      },
+      "Jul": {
+        "ft_days": 0.0,
+        "precip_mm": 102.2,
+        "snow_cm": 0.0,
+        "tmin_c": 20.1,
+        "tmax_c": 26.3,
+        "damage_index": 0.0
+      },
+      "Aug": {
+        "ft_days": 0.0,
+        "precip_mm": 99.8,
+        "snow_cm": 0.0,
+        "tmin_c": 19.4,
+        "tmax_c": 25.6,
+        "damage_index": 0.0
+      },
+      "Sep": {
+        "ft_days": 0.0,
+        "precip_mm": 68.7,
+        "snow_cm": 0.0,
+        "tmin_c": 16.1,
+        "tmax_c": 22.1,
+        "damage_index": 0.0
+      },
+      "Oct": {
+        "ft_days": 0.1,
+        "precip_mm": 103.9,
+        "snow_cm": 0.1,
+        "tmin_c": 9.6,
+        "tmax_c": 15.5,
+        "damage_index": 0.015
+      },
+      "Nov": {
+        "ft_days": 6.9,
+        "precip_mm": 67.4,
+        "snow_cm": 6.6,
+        "tmin_c": 2.2,
+        "tmax_c": 7.7,
+        "damage_index": 1.316
+      },
+      "Dec": {
+        "ft_days": 12.4,
+        "precip_mm": 63.5,
+        "snow_cm": 11.7,
+        "tmin_c": -2.7,
+        "tmax_c": 2.6,
+        "damage_index": 2.412
+      }
+    },
+    "actual": {
+      "2022-10": {
+        "ft_days": 0,
+        "precip_mm": 86.9,
+        "snow_cm": 0.2,
+        "tmin_c": 7.4,
+        "tmax_c": 16.2,
+        "damage_index": 0.0
+      },
+      "2022-11": {
+        "ft_days": 11,
+        "precip_mm": 38.6,
+        "snow_cm": 4.4,
+        "tmin_c": 1.8,
+        "tmax_c": 10.0,
+        "damage_index": 1.789
+      },
+      "2022-12": {
+        "ft_days": 11,
+        "precip_mm": 59.3,
+        "snow_cm": 7.8,
+        "tmin_c": -4.8,
+        "tmax_c": 2.1,
+        "damage_index": 2.168
+      },
+      "2023-01": {
+        "ft_days": 16,
+        "precip_mm": 64.9,
+        "snow_cm": 15.8,
+        "tmin_c": -3.3,
+        "tmax_c": 3.0,
+        "damage_index": 3.193
+      },
+      "2023-02": {
+        "ft_days": 17,
+        "precip_mm": 90.2,
+        "snow_cm": 8.6,
+        "tmin_c": -4.0,
+        "tmax_c": 5.0,
+        "damage_index": 2.94
+      },
+      "2023-03": {
+        "ft_days": 14,
+        "precip_mm": 84.8,
+        "snow_cm": 17.4,
+        "tmin_c": -0.9,
+        "tmax_c": 6.6,
+        "damage_index": 3.177
+      },
+      "2023-04": {
+        "ft_days": 2,
+        "precip_mm": 71.3,
+        "snow_cm": 2.3,
+        "tmin_c": 4.4,
+        "tmax_c": 15.1,
+        "damage_index": 0.243
+      },
+      "2023-05": {
+        "ft_days": 0,
+        "precip_mm": 47.1,
+        "snow_cm": 0.0,
+        "tmin_c": 9.4,
+        "tmax_c": 19.0,
+        "damage_index": 0.0
+      },
+      "2023-06": {
+        "ft_days": 0,
+        "precip_mm": 62.0,
+        "snow_cm": 0.0,
+        "tmin_c": 15.1,
+        "tmax_c": 24.3,
+        "damage_index": 0.0
+      },
+      "2023-07": {
+        "ft_days": 0,
+        "precip_mm": 308.5,
+        "snow_cm": 0.0,
+        "tmin_c": 18.4,
+        "tmax_c": 26.5,
+        "damage_index": 0.0
+      },
+      "2023-08": {
+        "ft_days": 0,
+        "precip_mm": 111.9,
+        "snow_cm": 0.0,
+        "tmin_c": 18.3,
+        "tmax_c": 25.8,
+        "damage_index": 0.0
+      },
+      "2023-09": {
+        "ft_days": 0,
+        "precip_mm": 170.0,
+        "snow_cm": 0.0,
+        "tmin_c": 16.0,
+        "tmax_c": 22.9,
+        "damage_index": 0.0
+      },
+      "2023-10": {
+        "ft_days": 2,
+        "precip_mm": 126.2,
+        "snow_cm": 0.9,
+        "tmin_c": 9.2,
+        "tmax_c": 16.3,
+        "damage_index": 0.454
+      },
+      "2023-11": {
+        "ft_days": 8,
+        "precip_mm": 35.0,
+        "snow_cm": 2.3,
+        "tmin_c": 1.6,
+        "tmax_c": 9.5,
+        "damage_index": 1.198
+      },
+      "2023-12": {
+        "ft_days": 15,
+        "precip_mm": 73.5,
+        "snow_cm": 2.5,
+        "tmin_c": 0.5,
+        "tmax_c": 6.3,
+        "damage_index": 2.639
+      },
+      "2024-01": {
+        "ft_days": 17,
+        "precip_mm": 108.8,
+        "snow_cm": 31.8,
+        "tmin_c": -6.5,
+        "tmax_c": -0.8,
+        "damage_index": 4.404
+      },
+      "2024-02": {
+        "ft_days": 18,
+        "precip_mm": 16.6,
+        "snow_cm": 4.3,
+        "tmin_c": -1.7,
+        "tmax_c": 7.7,
+        "damage_index": 2.965
+      },
+      "2024-03": {
+        "ft_days": 15,
+        "precip_mm": 118.6,
+        "snow_cm": 9.4,
+        "tmin_c": 1.1,
+        "tmax_c": 9.8,
+        "damage_index": 2.639
+      },
+      "2024-04": {
+        "ft_days": 1,
+        "precip_mm": 109.7,
+        "snow_cm": 3.9,
+        "tmin_c": 6.0,
+        "tmax_c": 14.7,
+        "damage_index": 0.122
+      },
+      "2024-05": {
+        "ft_days": 0,
+        "precip_mm": 98.2,
+        "snow_cm": 0.0,
+        "tmin_c": 11.5,
+        "tmax_c": 21.2,
+        "damage_index": 0.0
+      },
+      "2024-06": {
+        "ft_days": 0,
+        "precip_mm": 72.7,
+        "snow_cm": 0.0,
+        "tmin_c": 17.9,
+        "tmax_c": 27.4,
+        "damage_index": 0.0
+      },
+      "2024-07": {
+        "ft_days": 0,
+        "precip_mm": 171.5,
+        "snow_cm": 0.0,
+        "tmin_c": 18.8,
+        "tmax_c": 26.9,
+        "damage_index": 0.0
+      },
+      "2024-08": {
+        "ft_days": 0,
+        "precip_mm": 70.1,
+        "snow_cm": 0.0,
+        "tmin_c": 18.7,
+        "tmax_c": 27.4,
+        "damage_index": 0.0
+      },
+      "2024-09": {
+        "ft_days": 0,
+        "precip_mm": 67.0,
+        "snow_cm": 0.0,
+        "tmin_c": 16.2,
+        "tmax_c": 24.8,
+        "damage_index": 0.0
+      },
+      "2024-10": {
+        "ft_days": 0,
+        "precip_mm": 53.8,
+        "snow_cm": 0.2,
+        "tmin_c": 9.7,
+        "tmax_c": 19.6,
+        "damage_index": 0.0
+      },
+      "2024-11": {
+        "ft_days": 3,
+        "precip_mm": 95.0,
+        "snow_cm": 5.7,
+        "tmin_c": 5.0,
+        "tmax_c": 10.7,
+        "damage_index": 0.591
+      },
+      "2024-12": {
+        "ft_days": 10,
+        "precip_mm": 48.8,
+        "snow_cm": 4.3,
+        "tmin_c": -3.1,
+        "tmax_c": 2.9,
+        "damage_index": 2.706
+      },
+      "2025-01": {
+        "ft_days": 9,
+        "precip_mm": 60.3,
+        "snow_cm": 9.3,
+        "tmin_c": -8.9,
+        "tmax_c": -1.8,
+        "damage_index": 1.933
+      },
+      "2025-02": {
+        "ft_days": 7,
+        "precip_mm": 23.7,
+        "snow_cm": 12.0,
+        "tmin_c": -6.5,
+        "tmax_c": 0.4,
+        "damage_index": 1.638
+      },
+      "2025-03": {
+        "ft_days": 10,
+        "precip_mm": 94.1,
+        "snow_cm": 11.9,
+        "tmin_c": 1.6,
+        "tmax_c": 11.0,
+        "damage_index": 2.051
+      },
+      "2025-04": {
+        "ft_days": 2,
+        "precip_mm": 64.7,
+        "snow_cm": 0.2,
+        "tmin_c": 5.5,
+        "tmax_c": 14.1,
+        "damage_index": 0.469
+      },
+      "2025-05": {
+        "ft_days": 0,
+        "precip_mm": 71.3,
+        "snow_cm": 0.0,
+        "tmin_c": 9.4,
+        "tmax_c": 17.4,
+        "damage_index": 0.0
+      },
+      "2025-06": {
+        "ft_days": 0,
+        "precip_mm": 124.0,
+        "snow_cm": 0.0,
+        "tmin_c": 17.7,
+        "tmax_c": 27.0,
+        "damage_index": 0.0
+      },
+      "2025-07": {
+        "ft_days": 0,
+        "precip_mm": 102.5,
+        "snow_cm": 0.0,
+        "tmin_c": 21.0,
+        "tmax_c": 28.6,
+        "damage_index": 0.0
+      },
+      "2025-08": {
+        "ft_days": 0,
+        "precip_mm": 42.5,
+        "snow_cm": 0.0,
+        "tmin_c": 19.3,
+        "tmax_c": 26.2,
+        "damage_index": 0.0
+      },
+      "2025-09": {
+        "ft_days": 0,
+        "precip_mm": 38.5,
+        "snow_cm": 0.0,
+        "tmin_c": 16.1,
+        "tmax_c": 23.9,
+        "damage_index": 0.0
+      },
+      "2025-10": {
+        "ft_days": 0,
+        "precip_mm": 56.3,
+        "snow_cm": 0.0,
+        "tmin_c": 11.0,
+        "tmax_c": 17.8,
+        "damage_index": 0.0
+      },
+      "2025-11": {
+        "ft_days": 6,
+        "precip_mm": 73.7,
+        "snow_cm": 22.5,
+        "tmin_c": 2.6,
+        "tmax_c": 9.1,
+        "damage_index": 1.633
+      },
+      "2025-12": {
+        "ft_days": 9,
+        "precip_mm": 80.7,
+        "snow_cm": 16.6,
+        "tmin_c": -6.2,
+        "tmax_c": 0.7,
+        "damage_index": 2.37
+      },
+      "2026-01": {
+        "ft_days": 6,
+        "precip_mm": 50.9,
+        "snow_cm": 18.8,
+        "tmin_c": -9.2,
+        "tmax_c": -2.1,
+        "damage_index": 1.58
+      },
+      "2026-02": {
+        "ft_days": 12,
+        "precip_mm": 16.6,
+        "snow_cm": 4.7,
+        "tmin_c": -3.6,
+        "tmax_c": 4.3,
+        "damage_index": 2.289
+      },
+      "2026-03": {
+        "ft_days": 11,
+        "precip_mm": 94.8,
+        "snow_cm": 5.2,
+        "tmin_c": 0.9,
+        "tmax_c": 11.0,
+        "damage_index": 2.387
+      },
+      "2026-04": {
+        "ft_days": 1,
+        "precip_mm": 163.7,
+        "snow_cm": 1.2,
+        "tmin_c": 6.9,
+        "tmax_c": 16.4,
+        "damage_index": 0.122
+      },
+      "2026-05": {
+        "ft_days": 0,
+        "precip_mm": 33.6,
+        "snow_cm": 0.0,
+        "tmin_c": 11.0,
+        "tmax_c": 19.7,
+        "damage_index": 0.0
+      },
+      "2026-06": {
+        "ft_days": 0,
+        "precip_mm": 181.7,
+        "snow_cm": 0.0,
+        "tmin_c": 17.3,
+        "tmax_c": 24.6,
+        "damage_index": 0.0
+      },
+      "2026-07": {
+        "ft_days": 0,
+        "precip_mm": 106.0,
+        "snow_cm": 0.0,
+        "tmin_c": 20.8,
+        "tmax_c": 28.0,
+        "damage_index": 0.0
+      },
+      "2026-08": {
+        "ft_days": 0,
+        "precip_mm": 233.9,
+        "snow_cm": 0.0,
+        "tmin_c": 19.7,
+        "tmax_c": 26.3,
+        "damage_index": 0.0
+      }
+    }
+  },
   "growth": {
     "form": "logistic",
     "severity_cap": 100.0,

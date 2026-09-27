@@ -4,12 +4,16 @@ import { ArrowLeft, Info, Pause, Play, SkipBack, WarningCircle } from '@phosphor
 import Nav from '../components/Nav.jsx'
 import Footer from '../components/Footer.jsx'
 import ForecastMap from '../components/ForecastMap.jsx'
+import WeatherLayer from '../components/WeatherLayer.jsx'
+import Conditions from '../components/Conditions.jsx'
 import history from '../forecast/history.js'
 import {
+  climateFor,
   clusterDetectedAt,
   fleetTrack,
   model,
   monthsToReach,
+  precipitationFor,
   severityAt,
   track,
 } from '../forecast/lifecycle.js'
@@ -62,9 +66,10 @@ function Timeline({ series, offset, onScrub, nowIndex }) {
           <span className="ftl__key ftl__key--severe">Severe 70+</span>
           <span className="ftl__key ftl__key--moderate">Moderate 40-69</span>
           <span className="ftl__key ftl__key--minor">Minor under 40</span>
+          <span className="ftl__key ftl__key--ft">Freeze-thaw days</span>
         </span>
       </figcaption>
-      <svg viewBox={`0 0 ${W} ${H + 26}`} className="ftl__svg" role="img"
+      <svg viewBox={`0 0 ${W} ${H + 46}`} className="ftl__svg" role="img"
         aria-label="Stacked count of potholes by severity band over time">
         <path className="ftl__area ftl__area--minor" d={area(total, modPlusSevere)} />
         <path className="ftl__area ftl__area--moderate" d={area(modPlusSevere, severe)} />
@@ -78,9 +83,20 @@ function Timeline({ series, offset, onScrub, nowIndex }) {
         <line className="ftl__cursor" x1={x(offset + BACK_MONTHS)} y1={0}
           x2={x(offset + BACK_MONTHS)} y2={H} />
 
+        {/* Freeze-thaw days per month, on the same axis as the growth above it.
+            The winter bars line up with every step in the staircase, which is
+            the correlation the study found, drawn rather than asserted. */}
+        {series.map((s, i) => {
+          const c = climateFor(s.at)
+          const h = (c.ft_days / 20) * 16
+          return c.ft_days > 0 ? (
+            <rect key={`ft${i}`} className={`ftl__ft${c.actual ? '' : ' ftl__ft--normal'}`}
+              x={x(i) - 3} y={H + 4} width={6} height={Math.max(1, h)} />
+          ) : null
+        })}
         {series.map((s, i) =>
           s.at.getMonth() === 0 ? (
-            <text key={i} className="ftl__year" x={x(i)} y={H + 18}>{s.at.getFullYear()}</text>
+            <text key={i} className="ftl__year" x={x(i)} y={H + 38}>{s.at.getFullYear()}</text>
           ) : null,
         )}
         <rect className="ftl__hit" x="0" y="0" width={W} height={H}
@@ -206,6 +222,16 @@ export default function Forecast() {
   const atNow = series[BACK_MONTHS]
   const atEnd = series[series.length - 1]
   const selected = potholes.find((p) => p.cluster_id === selectedId) ?? null
+  const weather = useMemo(() => precipitationFor(at), [at])
+
+  // How much severity the fleet actually gained this month, so the conditions
+  // panel can put a number on what the weather did rather than only describing it.
+  const monthlyGrowth = useMemo(() => {
+    const i = offset + BACK_MONTHS
+    const prev = series[i - 1]
+    const now = series[i]
+    return prev && now ? now.meanSeverity - prev.meanSeverity : null
+  }, [series, offset])
   const visible = potholes.filter((p) => clusterDetectedAt(p) <= at).length
 
   return (
@@ -290,12 +316,16 @@ export default function Forecast() {
           <Timeline series={series} offset={offset} nowIndex={BACK_MONTHS}
             onScrub={(o) => { setPlaying(false); setOffset(o) }} />
 
+          <Conditions at={at} monthlyGrowth={monthlyGrowth} />
+
           <div className="fcast__grid">
             <div className="window fcast__stage">
               <div className="window__bar" aria-hidden="true"><span /><span /><span /></div>
               <div className="fcast__canvas">
                 <ForecastMap potholes={potholes} at={at} origin={origin} selectedId={selectedId}
                   onSelect={(id) => setSelectedId((prev) => (prev === id ? null : id))} />
+                <WeatherLayer kind={weather.kind} intensity={weather.intensity}
+                  freezeThaw={weather.freezeThaw} />
               </div>
               <p className="fcast__legend">
                 Circle size and colour are severity at {stamp(at)}. A faint outer ring is the upper

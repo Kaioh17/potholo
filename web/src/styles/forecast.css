@@ -404,3 +404,203 @@
     transition: none;
   }
 }
+
+/* Weather ---------------------------------------------------------------- */
+
+/* The canvas becomes the positioning context for the falling particles, and
+   clips them so nothing escapes over the page. */
+.fcast__canvas {
+  position: relative;
+  overflow: hidden;
+}
+
+.wx {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+.wx__bit {
+  position: absolute;
+  top: -8%;
+  display: block;
+  animation-name: wx-fall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  /* No will-change: a transform animation is composited on its own, and hinting
+     it on every one of ~90 particles would ask for 90 layers and the memory to
+     back them. */
+}
+
+/* Rain: thin, fast, almost vertical. */
+.wx--rain .wx__bit {
+  width: 1.5px;
+  height: 15px;
+  border-radius: 1px;
+  background: linear-gradient(to bottom, rgba(95, 128, 150, 0), rgba(72, 108, 133, 0.9));
+}
+
+/* Snow: round, slow, drifting sideways as it falls. */
+/* White on a near-white map needs help: the ring is what makes a flake read
+   as a flake rather than as a gap in the texture. */
+.wx--snow .wx__bit {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 0 0 1.25px rgba(86, 116, 138, 0.55), 0 1px 2px rgba(31, 60, 80, 0.18);
+}
+
+@keyframes wx-fall {
+  from {
+    transform: translate3d(0, 0, 0) scale(var(--scale, 1));
+  }
+  to {
+    transform: translate3d(var(--drift, 0px), 115vh, 0) scale(var(--scale, 1));
+  }
+}
+
+/* A month that crosses zero gets a cold cast over the map, so the damaging
+   months are distinguishable from the merely wet ones at a glance. */
+.wx--freezing::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(141, 182, 210, 0.3), rgba(141, 182, 210, 0.06));
+  pointer-events: none;
+}
+
+/* Conditions ------------------------------------------------------------- */
+
+.cond {
+  margin: 0 0 20px;
+  padding: 18px 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+}
+
+.cond__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.cond__when {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.cond__month {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.cond__year {
+  margin: 0;
+  color: var(--muted);
+  font: 500 1.25rem var(--font-mono);
+}
+
+.cond__grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.cond__stat {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  background: var(--surface);
+}
+
+/* Amber marks the months that actually drive the model; grey marks the ones
+   that look like weather but do nothing. */
+.cond__stat--active { background: var(--amber-pale); }
+.cond__stat--idle { background: var(--surface-alt); }
+
+.cond__icon {
+  display: flex;
+  flex: none;
+  margin-top: 2px;
+  color: var(--muted);
+}
+
+.cond__stat--active .cond__icon { color: var(--amber-ink); }
+
+.cond__body {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.cond__label {
+  color: var(--muted);
+  font-size: 0.6875rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.cond__value {
+  font: 700 1.125rem var(--font-body);
+  font-variant-numeric: tabular-nums;
+}
+
+.cond__sub {
+  color: var(--muted);
+  font-size: 0.75rem;
+  line-height: 1.35;
+}
+
+.cond__chain {
+  margin: 14px 0 0;
+  color: var(--ink-soft);
+  font-size: 0.9375rem;
+  line-height: 1.6;
+}
+
+/* Freeze-thaw track on the timeline -------------------------------------- */
+
+.ftl__ft {
+  fill: var(--blue-ink);
+  opacity: 0.75;
+}
+
+/* Hollow bars past today: a typical winter, not a predicted one. */
+.ftl__ft--normal {
+  fill: none;
+  stroke: var(--blue-ink);
+  stroke-width: 1;
+  opacity: 0.5;
+}
+
+.ftl__key--ft::before { background: var(--blue-ink); }
+
+@media (max-width: 860px) {
+  .cond__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 460px) {
+  .cond__grid { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* Falling weather is decoration over data; anyone who has asked for less
+   motion gets the cold cast and the numbers, without the particles. */
+@media (prefers-reduced-motion: reduce) {
+  .wx__bit { display: none; }
+}

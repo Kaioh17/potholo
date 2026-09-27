@@ -219,6 +219,30 @@ choice; the *timing* is not, which is why the band is wide and prominent.
 
 ---
 
+## Showing the mechanism
+
+The forecast page draws the weather that drives the model, because the central
+claim is counter-intuitive and easier to show than to assert: **water alone does
+nothing.** Chicago gets more rain in July (102 mm normal) than in January
+(53 mm), and July does no damage at all, because nothing crosses zero.
+
+Scrubbing to a summer month gives the heaviest rain the animation can draw over
+a fleet of potholes that does not move. Scrubbing to December gives snow, a cold
+cast over the map, nine freeze-thaw days and a x2.37 damage multiplier, and the
+severity starts climbing.
+
+Each month reports the drivers in the order the mechanism runs — precipitation,
+temperature range, freeze-thaw crossings, resulting damage multiplier — with the
+freeze-thaw tile highlighted, since it is the only one the growth model actually
+consumes. A freeze-thaw track sits under the composition chart on the same time
+axis, so the winter bars line up with every step in the staircase.
+
+**Past months use the weather Chicago actually had; future months use the
+2011-2018 climatological normal, and the page labels which.** That is not a
+shortcut. Q2 found freeze-thaw day counts do not rank winters by pothole volume,
+so forecasting a *particular* winter would claim skill the data denies. Recorded
+bars are solid; normal bars are hollow.
+
 ## Edge cases and failure modes
 
 Ones that changed the implementation:

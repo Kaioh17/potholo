@@ -224,3 +224,50 @@ export const model = {
   damageIndex: DAMAGE,
   calibration,
 }
+
+/* --------------------------------- Climate --------------------------------- */
+
+const CLIMATE = calibration.climate
+
+/**
+ * Weather for the month containing `date`.
+ *
+ * Returns the *actual* Chicago weather where we have it, and the 2011-2018
+ * climatological normal where we do not. The distinction is reported in
+ * `actual`, and the page shows it, because the difference is a finding rather
+ * than a technicality: freeze-thaw day counts were found not to rank winters by
+ * pothole volume (season-level r = -0.36 over seven winters), so forecasting a
+ * *particular* future winter would claim skill the data denies. An average
+ * winter is the honest future.
+ */
+export function climateFor(date) {
+  const d = date instanceof Date ? date : new Date(date)
+  const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+  const actual = CLIMATE.actual[key]
+  if (actual) return { ...actual, actual: true, month: d.getMonth() }
+  return { ...CLIMATE.normal[MONTHS[d.getMonth()]], actual: false, month: d.getMonth() }
+}
+
+/**
+ * What kind of precipitation to draw, and how hard.
+ *
+ * Snow wins whenever there is meaningful snowfall, because that is what a
+ * Chicago winter month looks like even when most of the month's water arrived
+ * as rain. `intensity` is 0-1 for the animation to scale particle count and
+ * speed; the thresholds are eyeballed against the monthly normals, where a wet
+ * month is about 120 mm and a snowy one about 25 cm.
+ */
+export function precipitationFor(date) {
+  const c = climateFor(date)
+  const snowing = c.snow_cm > 0.5
+  const amount = snowing ? c.snow_cm / 25 : c.precip_mm / 120
+  return {
+    kind: snowing ? 'snow' : c.precip_mm > 1 ? 'rain' : 'dry',
+    intensity: Math.max(0, Math.min(1, amount)),
+    freezeThaw: c.ft_days,
+    // The whole mechanism in one flag: water that freezes and thaws does damage,
+    // water that merely falls does not. July is the wettest kind of nothing.
+    damaging: c.ft_days > 0,
+    climate: c,
+  }
+}
