@@ -112,11 +112,42 @@ function Recording({ phone, playing, onOpenHelp }) {
   )
 }
 
-export default function Demo() {
+// The car, its controls and the phone's recording.  Uploads as `deviceId`, or as a random demo phone.
+export function DemoPlayer({ deviceId }) {
   const [playing, setPlaying] = useState(false)
   const [helpOpen, setHelpOpen] = useState(false)
-  const phone = useDemoPhone(playing)
+  const phone = useDemoPhone(playing, deviceId)
 
+  return (
+    <>
+      <div className="demo__grid">
+        <div className="window demo__stage">
+          <div className="window__bar" aria-hidden="true">
+            <span />
+            <span />
+            <span />
+          </div>
+          <div className="demo__controls">
+            <button type="button" className="btn btn--sm" onClick={() => setPlaying((p) => !p)}>
+              {playing ? <Pause size={16} weight="bold" aria-hidden="true" /> : <Play size={16} weight="bold" aria-hidden="true" />}
+              {playing ? 'Pause' : 'Play'}
+            </button>
+            <p className="demo__status">
+              {playing ? 'Sending readings to the API as they are recorded.' : 'Paused. Nothing is sent until you press Play.'}
+            </p>
+          </div>
+          <div className="demo__canvas">
+            <CityBlockScene playing={playing} onTelemetry={phone.onTelemetry} />
+          </div>
+        </div>
+        <Recording phone={phone} playing={playing} onOpenHelp={() => setHelpOpen(true)} />
+      </div>
+      <GlossaryDialog open={helpOpen} onClose={() => setHelpOpen(false)} />
+    </>
+  )
+}
+
+export default function Demo() {
   return (
     <>
       <a href="#main" className="skip-link">
@@ -141,31 +172,9 @@ export default function Demo() {
             </p>
           </header>
 
-          <div className="demo__grid">
-            <div className="window demo__stage">
-              <div className="window__bar" aria-hidden="true">
-                <span />
-                <span />
-                <span />
-              </div>
-              <div className="demo__controls">
-                <button type="button" className="btn btn--sm" onClick={() => setPlaying((p) => !p)}>
-                  {playing ? <Pause size={16} weight="bold" aria-hidden="true" /> : <Play size={16} weight="bold" aria-hidden="true" />}
-                  {playing ? 'Pause' : 'Play'}
-                </button>
-                <p className="demo__status">
-                  {playing ? 'Sending readings to the API as they are recorded.' : 'Paused. Nothing is sent until you press Play.'}
-                </p>
-              </div>
-              <div className="demo__canvas">
-                <CityBlockScene playing={playing} onTelemetry={phone.onTelemetry} />
-              </div>
-            </div>
-            <Recording phone={phone} playing={playing} onOpenHelp={() => setHelpOpen(true)} />
-          </div>
+          <DemoPlayer />
         </div>
       </main>
-      <GlossaryDialog open={helpOpen} onClose={() => setHelpOpen(false)} />
       <Footer wide />
     </>
   )

@@ -22,10 +22,11 @@ async function postBatch(body) {
  *
  * `onTelemetry` goes to the scene.  `liveRef` holds the newest sample and is meant to be sampled
  * on a timer, not rendered per frame.  `upload` is React state that changes once per batch, and `recentDetection` is true for a few
- * seconds after the API reports a pothole.
+ * seconds after the API reports a pothole.  `deviceId` is fixed when the hook first runs, so give a
+ * different one a new mount (a `key`).
  */
-export function useDemoPhone(playing) {
-  const [phone] = useState(createPhone)
+export function useDemoPhone(playing, deviceId) {
+  const [phone] = useState(() => createPhone(deviceId))
   const playingRef = useRef(playing)
   const liveRef = useRef({ sample: null, tripId: null })
   const [upload, setUpload] = useState(INITIAL)

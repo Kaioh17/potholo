@@ -19,8 +19,8 @@ export default function Hero() {
             and turns it into a mapped, cross-checked record. No new hardware, no survey crews.
           </Reveal>
           <Reveal index={3} className="hero__actions">
-            <Link to="/login" className="btn">
-              Log in
+            <Link to="/try" className="btn">
+              Try it
               <ArrowRight size={16} weight="bold" aria-hidden="true" />
             </Link>
             <a href="#how" className="btn btn--ghost">

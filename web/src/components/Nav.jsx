@@ -13,8 +13,8 @@ export default function Nav({ wide = false }) {
           <NavLink to="/map">Map</NavLink>
           <Link to="/#faq">FAQ</Link>
         </nav>
-        <Link to="/login" className="btn btn--sm">
-          Log in
+        <Link to="/try" className="btn btn--sm">
+          Try it
         </Link>
       </div>
     </header>

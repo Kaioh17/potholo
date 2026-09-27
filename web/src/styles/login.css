@@ -62,7 +62,8 @@
   font-weight: 500;
 }
 
-.field input {
+.field input,
+.field select {
   width: 100%;
   padding: 11px 12px;
   border: 1px solid #d8d7d3;
@@ -74,21 +75,30 @@
   transition: border-color 200ms var(--ease);
 }
 
+.field select {
+  appearance: none;
+  padding-right: 40px;
+  background: var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256' fill='%23787774'%3E%3Cpath d='M213.66 101.66l-80 80a8 8 0 0 1-11.32 0l-80-80a8 8 0 0 1 11.32-11.32L128 164.69l74.34-74.35a8 8 0 0 1 11.32 11.32Z'/%3E%3C/svg%3E") no-repeat right 12px center / 16px;
+}
+
 .field input::placeholder {
   color: #a3a29e;
 }
 
-.field input:hover {
+.field input:hover,
+.field select:hover {
   border-color: #b9b8b4;
 }
 
-.field input:focus-visible {
+.field input:focus-visible,
+.field select:focus-visible {
   outline: 2px solid var(--ink);
   outline-offset: 1px;
   border-color: var(--ink);
 }
 
-.field input[aria-invalid='true'] {
+.field input[aria-invalid='true'],
+.field select[aria-invalid='true'] {
   border-color: var(--red-ink);
 }
 

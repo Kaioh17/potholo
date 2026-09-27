@@ -6,6 +6,7 @@ import './styles/tokens.css'
 import './styles/global.css'
 import './styles/landing.css'
 import './styles/login.css'
+import './styles/try.css'
 import './styles/map.css'
 import './styles/admin.css'
 

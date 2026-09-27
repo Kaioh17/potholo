@@ -1,0 +1,61 @@
+.try__join {
+  margin-inline: auto;
+}
+
+.field__hint {
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.try__phone {
+  margin-bottom: 24px;
+  padding: 16px 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  display: grid;
+  gap: 16px;
+}
+
+.try__who {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.try__who > div {
+  flex: 1;
+  min-width: 0;
+}
+
+.try__name {
+  font-weight: 700;
+}
+
+.try__device {
+  color: var(--muted);
+  font-size: 0.875rem;
+  overflow-wrap: anywhere;
+}
+
+.try__device code {
+  font: 0.8125rem var(--font-mono);
+}
+
+.try__stats {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-btn);
+  overflow: hidden;
+}
+
+@media (max-width: 760px) {
+  .try__stats {
+    grid-template-columns: 1fr 1fr;
+  }
+}

@@ -68,15 +68,16 @@ function makeFix(second) {
 }
 
 /**
- * A phone that records the demo car.  Feed it the sim clock and it hands back finished request bodies.
+ * A phone that records the demo car.  It uploads as `givenDeviceId`, or as a random demo device when
+ * none is given.  Feed it the sim clock and it hands back finished request bodies.
  *
  * Each pass of the car over the pothole is its own trip with its own `trip_id`, because a trip's
  * timestamps start at zero.  A batch is three seconds of samples plus the GPS fixes on the whole
  * seconds around it, and is only released once the sim clock has reached its last fix, so the body
  * never contains a reading from the future.
  */
-export function createPhone() {
-  const deviceId = randomId('demo')
+export function createPhone(givenDeviceId) {
+  const deviceId = givenDeviceId ?? randomId('demo')
   let trip = null
 
   function startTrip(pass) {

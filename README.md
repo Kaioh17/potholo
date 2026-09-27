@@ -16,7 +16,7 @@ This repository is the prototype.
 
 | Part | Status | Notes |
 | --- | --- | --- |
-| Web app (`web/`) | In progress | React landing page, login, and a simulated pothole demo. |
+| Web app (`web/`) | In progress | React landing page, a join-and-try page, and a simulated pothole demo. |
 | Data processing API (`api/`) | Working | FastAPI. Ingest, detection, clustering, CDOT reporting. |
 | Mock phone (`mock/`) | Working | Sedan, SUV, semi and bus, in the real phone wire format. |
 | Real drive data (`data/`) | Working | 418s of instrumented drive, recovered from a screen recording. |
@@ -90,7 +90,8 @@ Routes:
 - `/map` shows the locations several vehicles agreed on, read live from the API.
   It needs the API running; `npm run dev` proxies `/api` to `http://127.0.0.1:8000`.
 - `/admin` is the fleet dashboard. It reads `GET /v1/devices` and `GET /v1/clusters` from the API, refreshes every 5 seconds, and has no login yet.
-- `/login` is the login form.
+- `/try` is where someone joins with a name and a phone model, then drives the same simulation as `/demo` with readings filed under their own device id. The user id is kept in the browser's local storage; there is no login.
+- `/login` is the login form. Nothing links to it now that the sign-in buttons say "Try it".
   It is UI only for now, because authentication arrives with the API.
 
 ## Running the API
