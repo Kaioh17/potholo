@@ -72,7 +72,7 @@ export default function Brand() {
   return (
     <Link to="/" className="brand" aria-label="Potholo home">
       <BrandMark />
-      <span>Potholo</span>
+      <span>potholo</span>
     </Link>
   )
 }

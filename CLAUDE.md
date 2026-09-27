@@ -20,7 +20,7 @@ Swapping mock data for real phone data must not require API changes.
 
 ## Conventions
 
-- The app name "Potholo" uses the Fredoka font.
+- The app name renders as lowercase "potholo" in the UI, using the Bricolage Grotesque font.
   All other text uses DM Sans.
 - Follow the minimalist UI style already in `web/src/styles/`.
   Use the tokens in `tokens.css`: warm monochrome, amber as the only accent, flat surfaces, 1px borders, no gradients or heavy shadows.
