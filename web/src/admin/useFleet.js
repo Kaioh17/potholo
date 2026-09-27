@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-export const API_URL = (import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000').replace(/\/$/, '')
+export const API_URL = (import.meta.env.VITE_API_URL || 'http://127.0.0.1:8044').replace(/\/$/, '')
 
 async function getJson(path) {
   const response = await fetch(`${API_URL}${path}`)

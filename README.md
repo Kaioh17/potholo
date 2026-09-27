@@ -88,7 +88,7 @@ Routes:
 - `/` is the landing page.
 - `/demo` is a simulated drive through a pothole with mock phone readings.
 - `/map` shows the locations several vehicles agreed on, read live from the API.
-  It needs the API running; `npm run dev` proxies `/api` to `http://127.0.0.1:8000`.
+  It needs the API running. The web app calls it at `VITE_API_URL`, which defaults to `http://127.0.0.1:8044`.
 - `/admin` is the fleet dashboard. It reads `GET /v1/devices` and `GET /v1/clusters` from the API, refreshes every 5 seconds, and has no login yet.
 - `/try` is where someone joins with a name and a phone model, then drives the same simulation as `/demo` with readings filed under their own device id. The user id is kept in the browser's local storage; there is no login.
 - `/login` is the login form. Nothing links to it now that the sign-in buttons say "Try it".
@@ -101,14 +101,14 @@ Requires Python 3.12 or newer. See `api/README.md` for the full setup.
 ```bash
 cd api
 pip install -r requirements-dev.txt
-fastapi dev
+fastapi dev --port 8044
 ```
 
 Then feed it a trip without needing a phone:
 
 ```bash
 python mock/phone.py --duration 60 --potholes 12 31 47.5 --out batch.json
-curl -X POST http://127.0.0.1:8000/v1/batches -H 'content-type: application/json' -d @batch.json
+curl -X POST http://127.0.0.1:8044/v1/batches -H 'content-type: application/json' -d @batch.json
 ```
 
 To reproduce the detection and false-positive numbers:
@@ -160,3 +160,19 @@ Neither is run for you.
 - `scripts/push.sh` rebases the current feature branch onto the latest `main` and pushes it with `--force-with-lease`.
 - `scripts/merge.sh` does the same rebase, then fast-forwards `main` to the branch and pushes `main`.
   It asks before updating `main`, and `--yes` skips the question.
+
+## Production with Docker
+
+The API and the web app are separate images, started together with Compose.
+
+```bash
+docker compose up -d --build
+```
+
+- The API listens on `127.0.0.1:8044`, for `https://api-potholo.usemaison.io`.
+- The web app listens on `127.0.0.1:8840`, for `https://potholo.usemaison.io`.
+- Point a TLS-terminating reverse proxy at those two ports.
+- The SQLite database is on the `api-data` volume.
+- `VITE_API_URL` is baked into the web bundle at build time (the `web` build arg in `docker-compose.yml`).
+- `POTHOLO_CORS_ORIGINS` must list the web origin.
+- `CHI311_API_KEY` is read from the shell or a `.env` next to `docker-compose.yml`.

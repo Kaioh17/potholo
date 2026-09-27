@@ -8,12 +8,12 @@ app update, and so an old trip can be re-analysed when the thresholds improve.
 
 from __future__ import annotations
 
-import os
 from typing import Annotated
 
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 
+from app.config import settings
 from app.database import SessionDep
 from app.detection import severity as sev
 from app.detection.locate import metres_between
@@ -126,7 +126,7 @@ def report(cluster_id: str, body: ReportRequest, session: SessionDep) -> dict:
         endpoint=endpoint,
     )
     outcome = chicago311.submit(
-        request, api_key=os.environ.get("CHI311_API_KEY"), confirm=body.confirm
+        request, api_key=settings.chi311_api_key or None, confirm=body.confirm
     )
     if outcome.get("submitted"):
         cluster.status = "reported"

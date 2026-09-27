@@ -1,12 +1,27 @@
 from pathlib import Path
+from typing import Literal
 
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 API_DIR = Path(__file__).resolve().parents[1]
+REPO_DIR = API_DIR.parent
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_prefix="POTHOLO_")
+    # Values come from the process environment first, then from .env at the repo
+    # root, then from the defaults below. In Docker there is no .env file in the
+    # image, so Compose passes the environment in and the file is skipped.
+    model_config = SettingsConfigDict(
+        env_prefix="POTHOLO_",
+        env_file=REPO_DIR / ".env",
+        env_file_encoding="utf-8",
+        # .env also holds keys for other parts of the project.
+        extra="ignore",
+    )
+
+    # "production" turns off the interactive API docs.
+    environment: Literal["development", "production"] = "development"
 
     # Anchored to the api/ folder, not the working directory. A relative path
     # meant `fastapi dev` in api/ and `python mock/seed_db.py` from the repo root
@@ -19,6 +34,14 @@ class Settings(BaseSettings):
     # how to reach you, and POTHOLO_GEOCODER_URL to point at your own instance.
     geocoder_url: str = "https://nominatim.openstreetmap.org/reverse"
     geocoder_user_agent: str = "Potholo/0.1 (prototype)"
+
+    # Chicago 311 Open311 key. Without it a report is prepared but never sent.
+    # Read as CHI311_API_KEY, without the POTHOLO_ prefix.
+    chi311_api_key: str | None = Field(default=None, validation_alias="CHI311_API_KEY")
+
+    # Origins allowed to call the API from a browser. In production set
+    # POTHOLO_CORS_ORIGINS='["https://potholo.usemaison.io"]'.
+    cors_origins: list[str] = ["http://localhost:8840", "http://127.0.0.1:8840"]
 
 
 settings = Settings()

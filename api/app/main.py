@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.config import settings
 from app.database import engine
 from app.models import Base
 from app.routers import detections, geocode, health, users
@@ -21,11 +22,15 @@ app = FastAPI(
     title="Potholo API",
     description="Pothole detection from phone accelerometer and gyroscope data.",
     lifespan=lifespan,
+    # The interactive docs are for development.
+    docs_url=None if settings.environment == "production" else "/docs",
+    redoc_url=None if settings.environment == "production" else "/redoc",
+    openapi_url=None if settings.environment == "production" else "/openapi.json",
 )
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=settings.cors_origins,
     allow_methods=["*"],
     allow_headers=["*"],
 )

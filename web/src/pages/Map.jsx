@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowsClockwise, MapPin, Warning } from '@phosphor-icons/rea
 import Nav from '../components/Nav.jsx'
 import Footer from '../components/Footer.jsx'
 import ClusterMap from '../components/ClusterMap.jsx'
+import { API_URL } from '../admin/useFleet.js'
 
 const FILTERS = [
   ['confirmed', 'Confirmed'],
@@ -30,7 +31,7 @@ function useClusters() {
   // state synchronously on mount.
   const load = useCallback(() => {
     let cancelled = false
-    fetch('/api/v1/clusters')
+    fetch(`${API_URL}/v1/clusters`)
       .then((response) => {
         if (!response.ok) throw new Error(`API returned ${response.status}`)
         return response.json()
@@ -87,7 +88,7 @@ function ReportPreview({ cluster }) {
   const prepare = () => {
     setState({ status: 'loading' })
     // confirm stays false: this asks the API to build the request, not send it.
-    fetch(`/api/v1/clusters/${cluster.cluster_id}/report`, {
+    fetch(`${API_URL}/v1/clusters/${cluster.cluster_id}/report`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({}),

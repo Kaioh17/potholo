@@ -19,7 +19,7 @@ import urllib.request
 from phone import build_batch
 from streets import route_for
 
-API = "http://127.0.0.1:8000"
+API = "http://127.0.0.1:8044"
 
 # (device, street number, potholes at t seconds, IMU rate Hz, pothole depth m)
 FLEET = [

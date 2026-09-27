@@ -39,8 +39,8 @@ nothing downstream can tell the difference:
 
 ```bash
 python mock/phone.py --duration 60 --potholes 12 31 47.5 --out batch.json
-curl -X POST http://127.0.0.1:8000/v1/batches -H 'content-type: application/json' -d @batch.json
-curl http://127.0.0.1:8000/v1/clusters
+curl -X POST http://127.0.0.1:8044/v1/batches -H 'content-type: application/json' -d @batch.json
+curl http://127.0.0.1:8044/v1/clusters
 ```
 
 A cluster needs 3 distinct devices, 4 detections and a 35% hit rate before it is
@@ -76,10 +76,10 @@ Use `requirements.txt` instead if you only need to run the API.
 ## Run
 
 ```bash
-fastapi dev
+fastapi dev --port 8044
 ```
 
-The API runs at http://127.0.0.1:8000, and the interactive docs are at `/docs`.
+The API runs at http://127.0.0.1:8044, and the interactive docs are at `/docs`.
 Tables are created on startup, and there are no migrations yet.
 Creating tables never alters one that already exists, so a database made before a model changed keeps its old columns.
 The API checks for this at startup and refuses to start, naming the missing table or column.

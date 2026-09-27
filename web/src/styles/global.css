@@ -145,6 +145,10 @@ svg {
   line-height: 1;
 }
 
+.nav .brand {
+  font-family: var(--font-brand-nav);
+}
+
 .brand img {
   flex: none;
 }

@@ -1,0 +1,31 @@
+# Runs the API and the web app as separate images.
+# TLS and the public domains are handled by the reverse proxy in front:
+#   api-potholo.usemaison.io -> 127.0.0.1:8044
+#   potholo.usemaison.io     -> 127.0.0.1:8840
+services:
+  api:
+    build: ./api
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8044:8044"
+    environment:
+      POTHOLO_ENVIRONMENT: production
+      POTHOLO_CORS_ORIGINS: '["https://potholo.usemaison.io"]'
+      POTHOLO_GEOCODER_USER_AGENT: "Potholo/0.1 (https://potholo.usemaison.io)"
+      CHI311_API_KEY: ${CHI311_API_KEY:-}
+    volumes:
+      - api-data:/data
+
+  web:
+    build:
+      context: ./web
+      args:
+        VITE_API_URL: https://api-potholo.usemaison.io
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8840:8840"
+    depends_on:
+      - api
+
+volumes:
+  api-data:

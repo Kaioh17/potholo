@@ -8,15 +8,7 @@ export default defineConfig({
   // the main file and leaves the worker behind, so it is served as-is.
   optimizeDeps: { exclude: ['maplibre-gl'] },
   server: {
-    // The API runs on its own port in development. Proxying keeps the browser
-    // on one origin, so the map page can fetch /api/... with no CORS round trip
-    // and no base URL baked into the build.
-    proxy: {
-      '/api': {
-        target: 'http://127.0.0.1:8000',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, ''),
-      },
-    },
+    port: 8840,
+    strictPort: true,
   },
 })
