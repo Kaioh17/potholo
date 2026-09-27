@@ -11,7 +11,7 @@
 .login__back {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-1);
   color: var(--muted);
   font-size: 0.9375rem;
   text-decoration: none;
@@ -25,39 +25,40 @@
   flex: 1;
   display: grid;
   place-items: start center;
-  padding: 24px 16px 96px;
+  padding: var(--space-3) var(--space-2) 96px;
 }
 
 .login__card {
   width: 100%;
   max-width: 420px;
-  padding: 36px 32px 32px;
+  padding: var(--space-4);
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-card);
 }
 
 .login__card h1 {
-  margin-top: 32px;
+  margin-top: var(--space-4);
   font-size: 1.75rem;
   letter-spacing: -0.02em;
   line-height: 1.15;
 }
 
 .login__sub {
-  margin-top: 6px;
+  margin-top: var(--space-1);
   color: var(--muted);
 }
 
-.login form {
-  margin-top: 28px;
+/* Shared by the login card and the /try join card. */
+.login__card form {
+  margin-top: var(--space-3);
   display: grid;
-  gap: 20px;
+  gap: var(--space-3);
 }
 
 .field label {
   display: block;
-  margin-bottom: 6px;
+  margin-bottom: var(--space-1);
   font-size: 0.875rem;
   font-weight: 500;
 }
@@ -65,7 +66,8 @@
 .field input,
 .field select {
   width: 100%;
-  padding: 11px 12px;
+  min-height: var(--tap);
+  padding: 0 var(--space-2);
   border: 1px solid #d8d7d3;
   border-radius: var(--radius-btn);
   background: var(--surface);
@@ -77,8 +79,8 @@
 
 .field select {
   appearance: none;
-  padding-right: 40px;
-  background: var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256' fill='%23787774'%3E%3Cpath d='M213.66 101.66l-80 80a8 8 0 0 1-11.32 0l-80-80a8 8 0 0 1 11.32-11.32L128 164.69l74.34-74.35a8 8 0 0 1 11.32 11.32Z'/%3E%3C/svg%3E") no-repeat right 12px center / 16px;
+  padding-right: var(--space-6);
+  background: var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256' fill='%23787774'%3E%3Cpath d='M213.66 101.66l-80 80a8 8 0 0 1-11.32 0l-80-80a8 8 0 0 1 11.32-11.32L128 164.69l74.34-74.35a8 8 0 0 1 11.32 11.32Z'/%3E%3C/svg%3E") no-repeat right var(--space-2) center / 16px;
 }
 
 .field input::placeholder {
@@ -130,15 +132,14 @@
 }
 
 .field__error {
-  margin-top: 6px;
+  margin-top: var(--space-1);
   color: var(--red-ink);
   font-size: 0.875rem;
 }
 
 .login__submit {
   width: 100%;
-  margin-top: 4px;
-  padding-block: 14px;
+  min-height: 48px;
 }
 
 .login__notice {
@@ -147,9 +148,9 @@
 
 .login__notice p {
   display: flex;
-  gap: 10px;
-  margin-top: 20px;
-  padding: 12px 14px;
+  gap: var(--space-1);
+  margin-top: var(--space-3);
+  padding: var(--space-2);
   background: var(--amber-pale);
   color: var(--amber-ink);
   border-radius: var(--radius-btn);
@@ -164,6 +165,6 @@
 
 @media (max-width: 480px) {
   .login__card {
-    padding: 28px 20px 24px;
+    padding: var(--space-3) var(--space-2);
   }
 }

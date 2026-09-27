@@ -1,9 +1,12 @@
 import { Link } from 'react-router-dom'
 import { ArrowRight } from '@phosphor-icons/react'
-import RoadScene from './RoadScene.jsx'
 import Reveal from './Reveal.jsx'
+import { useMediaQuery } from '../useMediaQuery.js'
 
 export default function Hero() {
+  // With reduced motion the clip waits on its poster frame until played by hand.
+  const reduceMotion = useMediaQuery('(prefers-reduced-motion: reduce)')
+
   return (
     <section className="hero" aria-labelledby="hero-title">
       <div className="wrap hero__grid">
@@ -29,7 +32,23 @@ export default function Hero() {
           </Reveal>
         </div>
         <Reveal index={2} className="hero__art">
-          <RoadScene />
+          <video
+            key={reduceMotion ? 'still' : 'auto'}
+            className="hero__video"
+            poster="/media/hero-analysis-poster.jpg"
+            width="1280"
+            height="720"
+            autoPlay={!reduceMotion}
+            controls={reduceMotion}
+            muted
+            loop
+            playsInline
+            preload="metadata"
+            aria-label="Live accelerometer and gyroscope readings plotted over time, with the traces jumping as the phone passes over a pothole"
+          >
+            <source src="/media/hero-analysis.webm" type="video/webm" />
+            <source src="/media/hero-analysis.mp4" type="video/mp4" />
+          </video>
         </Reveal>
       </div>
     </section>

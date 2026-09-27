@@ -1,4 +1,5 @@
 import { ShieldCheck, Bank, ChartLineUp } from '@phosphor-icons/react'
+import Clamp from './Clamp.jsx'
 import Reveal from './Reveal.jsx'
 
 export default function Audiences() {
@@ -17,11 +18,11 @@ export default function Audiences() {
             </span>
             <span className="tag tag--amber">Insurance claims</span>
             <h3>Proof of where and when the damage happened.</h3>
-            <p>
+            <Clamp>
               A wheel or tire claim usually turns on one question: was the pothole really there on
               that day? Potholo keeps a timestamped, location-tagged trail of reports for each
               pothole, so drivers and insurers can point to evidence instead of arguing from memory.
-            </p>
+            </Clamp>
           </Reveal>
 
           <Reveal as="article" index={1} className="card">

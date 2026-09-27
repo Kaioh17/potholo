@@ -1,4 +1,5 @@
 import { CloudRain, Drop, Snowflake, Sun, ThermometerSimple } from '@phosphor-icons/react'
+import Clamp from './Clamp.jsx'
 import { climateFor, model } from '../forecast/lifecycle.js'
 
 /**
@@ -81,7 +82,7 @@ export default function Conditions({ at, monthlyGrowth }) {
         />
       </div>
 
-      <p className="cond__chain">
+      <Clamp className="cond__chain">
         {damaging ? (
           <>
             Water is in the cracks and the temperature crosses zero{' '}
@@ -101,7 +102,7 @@ export default function Conditions({ at, monthlyGrowth }) {
             Potholes hold still through the summer.
           </>
         )}
-      </p>
+      </Clamp>
     </section>
   )
 }

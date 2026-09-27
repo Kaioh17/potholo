@@ -1,7 +1,7 @@
 /* Forecast page ---------------------------------------------------------- */
 
 .fcast {
-  padding: 14px 0 28px;
+  padding: var(--space-2) 0 var(--space-4);
 }
 
 /* The page is meant to be read without scrolling: the timeline, the drivers and
@@ -11,13 +11,13 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 24px;
+  gap: var(--space-2) var(--space-3);
   flex-wrap: wrap;
-  margin: 4px 0 10px;
+  margin: 0 0 var(--space-2);
 }
 
 .fcast__title h1 {
-  margin: 4px 0 0;
+  margin: var(--space-1) 0 0;
   font-size: clamp(1.125rem, 1.8vw, 1.4rem);
   line-height: 1.2;
   letter-spacing: -0.015em;
@@ -33,7 +33,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 5px 10px;
+  padding: 4px 12px;
   background: var(--amber-pale);
   border: 1px solid #f0e2b6;
   border-radius: 9999px;
@@ -45,7 +45,7 @@
 .fcast__note summary::-webkit-details-marker { display: none; }
 
 .fcast__note p {
-  margin: 8px 0 0;
+  margin: var(--space-1) 0 0;
   color: var(--ink-soft);
   line-height: 1.55;
 }
@@ -54,7 +54,7 @@
   background: var(--amber-pale);
   border-color: #f0e2b6;
   color: var(--amber-ink);
-  margin-bottom: 24px;
+  margin-bottom: var(--space-3);
 }
 
 .banner--info p {
@@ -67,9 +67,10 @@
 
 .fcast__controls {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 16px;
-  padding: 8px 14px;
+  gap: var(--space-1) var(--space-2);
+  padding: var(--space-1) var(--space-2);
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-card);
@@ -77,15 +78,17 @@
 
 .fcast__transport {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-1);
   flex: none;
+  max-width: 100%;
 }
 
 .fcast__stamp {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-1);
   margin: 0;
   font-variant-numeric: tabular-nums;
 }
@@ -96,7 +99,7 @@
 
 /* The slider is the primary control, so it gets a visible track and a large
    grab target rather than the browser default. */
-.fcast__slider { flex: 1; display: block; }
+.fcast__slider { flex: 1 1 160px; display: block; }
 
 .fcast__slider input {
   width: 100%;
@@ -110,7 +113,7 @@
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 1px;
-  margin: 8px 0;
+  margin: var(--space-1) 0;
   padding: 0;
   background: var(--border);
   border: 1px solid var(--border);
@@ -119,7 +122,8 @@
 }
 
 .fcast__stats > div {
-  padding: 7px 12px;
+  min-width: 0;
+  padding: var(--space-1) var(--space-2);
   background: var(--surface);
 }
 
@@ -145,8 +149,8 @@
 /* Timeline --------------------------------------------------------------- */
 
 .ftl {
-  margin: 0 0 12px;
-  padding: 12px 16px 4px;
+  margin: 0 0 var(--space-1);
+  padding: var(--space-1) var(--space-2);
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-card);
@@ -156,14 +160,14 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: var(--space-1) var(--space-2);
   flex-wrap: wrap;
-  margin-bottom: 10px;
+  margin-bottom: var(--space-1);
 }
 
 .ftl__keys {
   display: flex;
-  gap: 12px;
+  gap: var(--space-1) var(--space-2);
   flex-wrap: wrap;
 }
 
@@ -235,13 +239,13 @@
 .fcast__grid {
   display: grid;
   grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
-  gap: 12px;
+  gap: var(--space-2);
   align-items: start;
 }
 
 .fcast__side {
   display: grid;
-  gap: 12px;
+  gap: var(--space-2);
 }
 
 .fcast__stage {
@@ -298,7 +302,7 @@
 
 .fcast__legend {
   margin: 0;
-  padding: 8px 12px;
+  padding: var(--space-1) var(--space-2);
   border-top: 1px solid var(--border);
   color: var(--muted);
   font-size: 0.8125rem;
@@ -308,7 +312,7 @@
 /* Detail ----------------------------------------------------------------- */
 
 .fdetail {
-  padding: 14px;
+  padding: var(--space-2);
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-card);
@@ -317,8 +321,8 @@
 .fdetail--empty {
   display: grid;
   justify-items: center;
-  gap: 8px;
-  padding: 20px;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-2);
   color: var(--muted);
   text-align: center;
 }
@@ -332,8 +336,8 @@
 .fdetail__now {
   display: flex;
   align-items: baseline;
-  gap: 8px;
-  margin: 6px 0 14px;
+  gap: var(--space-1);
+  margin: var(--space-1) 0 var(--space-2);
 }
 
 .fdetail__now strong {
@@ -366,16 +370,16 @@
 .fdetail__axis {
   display: flex;
   justify-content: space-between;
-  margin: 6px 0 14px;
+  margin: var(--space-1) 0 var(--space-2);
   color: var(--muted);
   font-size: 0.6875rem;
 }
 
 .fdetail__rows {
   display: grid;
-  gap: 5px;
+  gap: var(--space-1);
   margin: 0;
-  padding-top: 10px;
+  padding-top: var(--space-1);
   border-top: 1px solid var(--border);
   font-size: 0.875rem;
 }
@@ -383,14 +387,14 @@
 .fdetail__rows > div {
   display: flex;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--space-2);
 }
 
 .fdetail__rows dt { color: var(--muted); }
 .fdetail__rows dd { margin: 0; font-weight: 600; text-align: right; }
 
 .fdetail__note {
-  margin: 14px 0 0;
+  margin: var(--space-2) 0 0;
   color: var(--muted);
   font-size: 0.8125rem;
   line-height: 1.5;
@@ -399,8 +403,8 @@
 /* Caveats ---------------------------------------------------------------- */
 
 .fcast__caveats {
-  margin-top: 12px;
-  padding: 12px 16px;
+  margin-top: var(--space-2);
+  padding: var(--space-2);
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-card);
@@ -412,13 +416,13 @@
   cursor: pointer;
 }
 
-.fcast__caveats[open] summary { margin-bottom: 12px; }
+.fcast__caveats[open] summary { margin-bottom: var(--space-2); }
 
 .fcast__caveats ul {
   display: grid;
-  gap: 12px;
+  gap: var(--space-2);
   margin: 0;
-  padding-left: 20px;
+  padding-left: var(--space-3);
   max-width: 78ch;
 }
 
@@ -433,9 +437,11 @@
   .fcast__stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
+/* Phones: the four stats stay a 2x2 block of short numbers, and the slider
+   takes its own full-width row under the transport buttons. */
 @media (max-width: 560px) {
-  .fcast__stats { grid-template-columns: minmax(0, 1fr); }
-  .fcast__stamp { margin-left: 0; }
+  .fcast__slider { flex-basis: 100%; }
+  .fcast__stats dd { font-size: 1.125rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -516,7 +522,7 @@
 
 .cond {
   margin: 0;
-  padding: 10px 12px;
+  padding: var(--space-2);
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-card);
@@ -526,15 +532,15 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: var(--space-1);
   flex-wrap: wrap;
-  margin-bottom: 8px;
+  margin-bottom: var(--space-1);
 }
 
 .cond__when {
   display: flex;
   align-items: baseline;
-  gap: 10px;
+  gap: var(--space-1);
 }
 
 .cond__month {
@@ -563,8 +569,8 @@
 .cond__stat {
   display: flex;
   align-items: flex-start;
-  gap: 8px;
-  padding: 6px 9px;
+  gap: var(--space-1);
+  padding: var(--space-1);
   background: var(--surface);
 }
 
@@ -608,7 +614,7 @@
 }
 
 .cond__chain {
-  margin: 8px 0 0;
+  margin: var(--space-1) 0 0;
   color: var(--ink-soft);
   font-size: 0.8125rem;
   line-height: 1.5;
@@ -630,6 +636,14 @@
 }
 
 .ftl__key--ft::before { background: var(--blue-ink); }
+
+/* On a phone the bars are too thin to read as outlines, so a typical winter
+   is a pale fill instead. */
+.ftl__svg--narrow .ftl__ft--normal {
+  fill: var(--blue-ink);
+  stroke: none;
+  opacity: 0.3;
+}
 
 @media (max-width: 860px) {
   .cond__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -683,27 +697,33 @@
 .window__bar {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-1);
 }
 
 .window__dots {
   display: inline-flex;
-  gap: 5px;
+  flex: none;
+  gap: var(--space-1);
 }
 
+/* The title gives way to the Expand button rather than running under it. */
 .window__title {
+  min-width: 0;
+  overflow: hidden;
   color: var(--muted);
   font: 500 0.75rem var(--font-mono);
   letter-spacing: 0.02em;
   white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .window__expand {
   display: inline-flex;
+  flex: none;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
   margin-left: auto;
-  padding: 3px 9px;
+  padding: 4px var(--space-1);
   border: 1px solid var(--border);
   border-radius: var(--radius-btn);
   background: var(--surface);
@@ -725,7 +745,7 @@
   z-index: 60;
   display: grid;
   place-items: center;
-  padding: 24px;
+  padding: var(--space-3);
 }
 
 /* A button rather than a div, so the scrim is reachable and announced rather
@@ -744,7 +764,7 @@
   display: flex;
   flex-direction: column;
   width: min(1500px, 100%);
-  max-height: calc(100vh - 48px);
+  max-height: calc(100dvh - 48px);
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-card);
@@ -754,16 +774,18 @@
 .fexp__bar {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 10px 14px;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
   border-bottom: 1px solid var(--border);
   background: var(--surface-alt);
 }
 
 .fexp__title {
   display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
-  gap: 10px;
+  gap: 0 var(--space-1);
+  min-width: 0;
   margin-right: auto;
   font: 600 0.875rem var(--font-body);
 }
@@ -773,29 +795,17 @@
   font: 500 0.8125rem var(--font-mono);
 }
 
-.fexp__close {
-  display: inline-flex;
-  padding: 5px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-btn);
-  background: var(--surface);
-  color: var(--ink-soft);
-  cursor: pointer;
-}
-
-.fexp__close:hover { border-color: var(--ink); color: var(--ink); }
-
 .fexp__body {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 330px;
-  gap: 14px;
-  padding: 14px;
+  gap: var(--space-2);
+  padding: var(--space-2);
   overflow: auto;
 }
 
 .fexp__side {
   display: grid;
-  gap: 12px;
+  gap: var(--space-2);
   align-content: start;
 }
 
@@ -808,15 +818,30 @@
 }
 
 @media (max-width: 1100px) {
-  .fexp__body { grid-template-columns: minmax(0, 1fr); }
+  /* Stacked rows size to their content. Otherwise the map row, whose canvas
+     clips its overflow and so has no minimum height, is squeezed to a strip
+     when the side panel is taller than the sheet. */
+  .fexp__body { grid-template-columns: minmax(0, 1fr); grid-auto-rows: max-content; }
   .fcast__grid { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* On a phone the expanded map is the whole screen, not a sheet with a margin
+   of backdrop around it. */
+@media (max-width: 560px) {
+  .fexp { padding: 0; }
+  .fexp__sheet {
+    height: 100dvh;
+    max-height: none;
+    border: 0;
+    border-radius: 0;
+  }
 }
 
 /* Method ----------------------------------------------------------------- */
 
 .method {
-  margin-top: 12px;
-  padding: 12px 16px;
+  margin-top: var(--space-2);
+  padding: var(--space-2);
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-card);
@@ -829,24 +854,24 @@
 }
 
 .method[open] {
-  padding: 20px 24px;
+  padding: var(--space-3);
 }
 
 .method[open] > summary {
-  margin-bottom: 10px;
+  margin-bottom: var(--space-1);
   font-size: 1.125rem;
   letter-spacing: -0.01em;
 }
 
 .method__lede {
-  margin: 0 0 20px;
+  margin: 0 0 var(--space-3);
   max-width: 76ch;
   color: var(--ink-soft);
   line-height: 1.6;
 }
 
 .method__sub {
-  margin: 24px 0 10px;
+  margin: var(--space-3) 0 var(--space-1);
   font-size: 0.75rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -884,9 +909,9 @@
 .method__sources li {
   display: grid;
   grid-template-columns: minmax(200px, 1fr) minmax(0, 2fr) minmax(180px, 1fr);
-  gap: 14px;
+  gap: var(--space-2);
   align-items: baseline;
-  padding: 10px 14px;
+  padding: var(--space-1) var(--space-2);
   background: var(--surface);
   font-size: 0.875rem;
 }
@@ -904,7 +929,7 @@
 .method__gives { color: var(--muted); font-size: 0.8125rem; }
 
 .method__note {
-  margin: 10px 0 0;
+  margin: var(--space-1) 0 0;
   color: var(--muted);
   font-size: 0.875rem;
 }
@@ -912,8 +937,8 @@
 /* The formula gets room to breathe: it is the definition of the scale every
    other number on the page is quoted in. */
 .method__eq {
-  margin: 10px 0;
-  padding: 10px 14px;
+  margin: var(--space-1) 0;
+  padding: var(--space-1) var(--space-2);
   background: var(--surface-alt);
   border-left: 2px solid var(--amber);
   border-radius: 4px;
@@ -925,7 +950,7 @@
 
 .method__steps {
   display: grid;
-  gap: 18px;
+  gap: var(--space-2);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -935,7 +960,7 @@
 .method__step {
   display: grid;
   grid-template-columns: 26px minmax(0, 1fr);
-  gap: 12px;
+  gap: var(--space-2);
   align-items: start;
 }
 
@@ -959,8 +984,8 @@
 .method__step p:last-child { margin-bottom: 0; }
 
 .method__math {
-  margin: 8px 0;
-  padding: 12px 14px;
+  margin: var(--space-1) 0;
+  padding: var(--space-2);
   background: var(--surface-alt);
   border: 1px solid var(--border);
   border-radius: 6px;
@@ -971,7 +996,7 @@
 
 /* The single assumption in the chain is marked, not buried. */
 .method__assumed {
-  padding: 10px 12px;
+  padding: var(--space-1) var(--space-2);
   background: var(--amber-pale);
   border: 1px solid #f0e2b6;
   border-radius: 6px;
@@ -980,7 +1005,7 @@
 }
 
 .method__check {
-  padding: 10px 12px;
+  padding: var(--space-1) var(--space-2);
   background: var(--green-pale);
   border: 1px solid #d5e3d3;
   border-radius: 6px;
@@ -991,14 +1016,14 @@
 .method__alts {
   display: grid;
   gap: 4px;
-  margin: 6px 0 10px;
+  margin: var(--space-1) 0;
   padding: 0;
   list-style: none;
 }
 
 .method__alts li {
   display: flex;
-  gap: 10px;
+  gap: var(--space-1);
   align-items: baseline;
   font-size: 0.875rem;
 }
@@ -1007,9 +1032,9 @@
 
 .method__tells {
   display: grid;
-  gap: 8px;
+  gap: var(--space-1);
   margin: 0;
-  padding-left: 20px;
+  padding-left: var(--space-3);
   max-width: 76ch;
 }
 
@@ -1021,7 +1046,8 @@
 
 @media (max-width: 860px) {
   .method__sources li { grid-template-columns: minmax(0, 1fr); gap: 4px; }
-  .method { padding: 16px; }
+  .method,
+  .method[open] { padding: var(--space-2); }
 }
 
 /* OpenStreetMap tiles ---------------------------------------------------- */
@@ -1073,5 +1099,36 @@
   .radar {
     /* The cells still show where the weather is; they simply stop sweeping. */
     opacity: 0.8;
+  }
+}
+
+/* Touch: the disclosure rows, the Expand button and the note pill reach 44px.
+   Map pins stay sized by severity, because their size is the data. */
+@media (pointer: coarse) {
+  .fcast__note summary,
+  .window__expand {
+    min-height: var(--tap);
+  }
+  /* A 24px line plus 10px above and below. */
+  .fcast__caveats summary,
+  .method > summary {
+    padding-block: 10px;
+  }
+  .fcast__caveats,
+  .method {
+    padding-block: var(--space-1);
+  }
+  .fcast__stage .window__bar {
+    padding-block: var(--space-1);
+  }
+  /* Source links keep their underline tight to the text; the hit area grows
+     invisibly around them instead. */
+  .method__sources a {
+    position: relative;
+  }
+  .method__sources a::after {
+    content: '';
+    position: absolute;
+    inset: -12px 0;
   }
 }

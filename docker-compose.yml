@@ -3,24 +3,39 @@
 #   api-potholo.usemaison.io -> 127.0.0.1:8044
 #   potholo.usemaison.io     -> 127.0.0.1:8840
 services:
+  # Populates a fresh database with the scenario catalogue and a demo
+  # corridor, through the real detection pipeline -- see mock/seed_db.py.
+  # Runs once per volume: it exits immediately if /data/potholo.db already
+  # exists, so it does not re-seed (or duplicate data) on every `compose up`.
+  seed:
+    build:
+      context: .
+      dockerfile: mock/Dockerfile
+    volumes:
+      - api-data:/data
+
   api:
     build: ./api
     restart: unless-stopped
     ports:
       - "127.0.0.1:8044:8044"
     environment:
-      POTHOLO_ENVIRONMENT: production
-      POTHOLO_CORS_ORIGINS: '["https://potholo.usemaison.io"]'
+      POTHOLO_ENVIRONMENT: ${POTHOLO_ENVIRONMENT:-production}
+      POTHOLO_CORS_ORIGINS: '${POTHOLO_CORS_ORIGINS:-["https://potholo.usemaison.io"]}'
       POTHOLO_GEOCODER_USER_AGENT: "Potholo/0.1 (https://potholo.usemaison.io)"
       CHI311_API_KEY: ${CHI311_API_KEY:-}
     volumes:
       - api-data:/data
+    depends_on:
+      seed:
+        condition: service_completed_successfully
 
   web:
     build:
       context: ./web
       args:
-        VITE_API_URL: https://api-potholo.usemaison.io
+        VITE_API_URL: ${VITE_API_URL:-https://api-potholo.usemaison.io}
+        VITE_STADIA_API_KEY: ${VITE_STADIA_API_KEY:-}
     restart: unless-stopped
     ports:
       - "127.0.0.1:8840:8840"

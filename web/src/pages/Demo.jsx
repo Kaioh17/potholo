@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowLeft, Pause, Play, Pulse } from '@phosphor-icons/react'
 import Nav from '../components/Nav.jsx'
+import Clamp from '../components/Clamp.jsx'
 import Footer from '../components/Footer.jsx'
 import CityBlockScene from '../sim/CityBlockScene.jsx'
 import { GlossaryDialog, GlossaryToggle } from '../demo/Glossary.jsx'
@@ -170,11 +171,11 @@ function Recording({ phone, playing, onOpenHelp, showTryCta }) {
             {upload.lastBody ?? 'Press Play. The first body is sent once three seconds have been recorded.'}
           </pre>
 
-          <p className="recording__note">
+          <Clamp className="recording__note">
             The readings are a recorded trace with a little random variation on every value. They are sent to
             the real API in the format a phone app would use, and the API alone decides what counts as a
             pothole.
-          </p>
+          </Clamp>
         </>
       )}
     </aside>
@@ -252,12 +253,12 @@ export default function Demo() {
           <header className="demo__head">
             <p className="eyebrow">Demo</p>
             <h1>Drive through a pothole.</h1>
-            <p className="demo__lede">
+            <Clamp className="demo__lede">
               Press Play and a simulated car drives down a Chicago-style street and hits a pothole. Time slows so you
               can watch the front wheel drop in, the nose dip, and the rear wheel follow.
               While it drives, this page acts as the phone in the car. It sends accelerometer, gyroscope and
               location readings to the API as they are recorded, and the API works out whether there was a pothole.
-            </p>
+            </Clamp>
           </header>
 
           <DemoPlayer />

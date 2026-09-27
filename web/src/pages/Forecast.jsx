@@ -11,11 +11,13 @@ import {
   X,
 } from '@phosphor-icons/react'
 import Nav from '../components/Nav.jsx'
+import Clamp from '../components/Clamp.jsx'
 import ForecastMap from '../components/ForecastMap.jsx'
 import WeatherLayer from '../components/WeatherLayer.jsx'
 import Conditions from '../components/Conditions.jsx'
 import Method from '../components/Method.jsx'
 import history from '../forecast/history.js'
+import { useMediaQuery } from '../useMediaQuery.js'
 import {
   climateFor,
   clusterDetectedAt,
@@ -34,6 +36,10 @@ const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', '
 const stamp = (d) => `${MONTHS[d.getMonth()]} ${d.getFullYear()}`
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v))
 
+// Below this width the timeline switches to a narrower viewBox, or it renders
+// only a few dozen pixels high on a phone.
+const NARROW = '(max-width: 559px)'
+
 const monthsFromNow = (origin, offset) =>
   new Date(origin.getFullYear(), origin.getMonth() + offset, origin.getDate())
 
@@ -43,11 +49,15 @@ function Timeline({ series, offset, onScrub, nowIndex }) {
   // Wide and flat on purpose: the SVG scales to the container, so the viewBox
   // aspect ratio is what decides how many vertical pixels the chart eats. At
   // 2400 x 200 it lands around 130px on a laptop, where 1000 x 144 took 210.
-  const W = 2400
+  // A phone is a quarter as wide, so it gets a quarter of the width, which
+  // keeps the chart and its year labels readable there.
+  const narrow = useMediaQuery(NARROW)
+  const W = narrow ? 600 : 2400
   const H = 148
   const max = Math.max(1, ...series.map((s) => s.minor + s.moderate + s.severe))
   const x = (i) => (i / Math.max(1, series.length - 1)) * W
   const y = (v) => H - (v / max) * H
+  const barWidth = Math.min(12, (W / Math.max(1, series.length - 1)) * 0.6)
 
   const area = (upper, lower) => {
     const top = series.map((s, i) => `${i === 0 ? 'M' : 'L'} ${x(i)} ${y(upper(s))}`).join(' ')
@@ -73,7 +83,7 @@ function Timeline({ series, offset, onScrub, nowIndex }) {
           <span className="ftl__key ftl__key--ft">Freeze-thaw days</span>
         </span>
       </figcaption>
-      <svg viewBox={`0 0 ${W} ${H + 52}`} className="ftl__svg" role="img"
+      <svg viewBox={`0 0 ${W} ${H + 52}`} className={`ftl__svg${narrow ? ' ftl__svg--narrow' : ''}`} role="img"
         aria-label="Stacked count of potholes by severity band over time, with freeze-thaw days beneath">
         <path className="ftl__area ftl__area--minor" d={area(total, modPlusSevere)} />
         <path className="ftl__area ftl__area--moderate" d={area(modPlusSevere, severe)} />
@@ -94,7 +104,7 @@ function Timeline({ series, offset, onScrub, nowIndex }) {
           const h = (c.ft_days / 20) * 18
           return c.ft_days > 0 ? (
             <rect key={`ft${i}`} className={`ftl__ft${c.actual ? '' : ' ftl__ft--normal'}`}
-              x={x(i) - 6} y={H + 5} width={12} height={Math.max(2, h)} />
+              x={x(i) - barWidth / 2} y={H + 5} width={barWidth} height={Math.max(2, h)} />
           ) : null
         })}
         {series.map((s, i) =>
@@ -346,10 +356,12 @@ export default function Forecast() {
                 </button>
               </div>
               {stage(true)}
-              <p className="fcast__legend">
+              <div className="fcast__legend">
+                <Clamp lines={2}>
                 OpenStreetMap basemap. Radar is that month&apos;s real precipitation, drifting west
                 to east; size and colour are severity at {stamp(at)}.
-              </p>
+                </Clamp>
+              </div>
             </section>
 
             <div className="fcast__side">
@@ -408,7 +420,7 @@ export default function Forecast() {
                 <ArrowsIn size={15} weight="bold" aria-hidden="true" />
                 Collapse
               </button>
-              <button type="button" className="fexp__close" onClick={() => setExpanded(false)}
+              <button type="button" className="icon-button" onClick={() => setExpanded(false)}
                 aria-label="Close the expanded map">
                 <X size={16} weight="bold" aria-hidden="true" />
               </button>

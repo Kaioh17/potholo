@@ -1,12 +1,20 @@
 import { useEffect, useRef } from 'react'
 import * as maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
+import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url'
 import { lookupAddress } from '../admin/address.js'
 
 // A real street basemap from OpenFreeMap (OpenStreetMap data, vector tiles, no
 // API key): roads by hierarchy, the river, parks and building blocks, with
 // street labels. The pins are ordinary DOM markers so the site's own tokens
 // style them.
+
+// MapLibre loads its worker from a path relative to wherever its own bundle
+// ends up, which after a production build is inside a hashed chunk that has
+// no such sibling file -- the worker 404s and the map never renders. Pointing
+// it at Vite's own asset URL for the same file keeps it correct through
+// hashing and through future maplibre-gl version bumps.
+maplibregl.setWorkerUrl(maplibreWorkerUrl)
 
 const STYLE = 'https://tiles.openfreemap.org/styles/bright'
 const CHICAGO = [-87.6233, 41.8827]

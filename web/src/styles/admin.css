@@ -17,7 +17,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px 24px;
+  gap: var(--space-2) var(--space-3);
   flex-wrap: wrap;
   min-height: 68px;
 }
@@ -26,7 +26,7 @@
 .admin__controls {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-2);
   flex-wrap: wrap;
 }
 
@@ -37,23 +37,23 @@
 
 .admin__main {
   display: grid;
-  gap: 24px;
-  padding-block: 24px 112px;
+  gap: var(--space-3);
+  padding-block: var(--space-3) 112px;
 }
 
 .admin__summary {
   display: grid;
-  gap: 12px;
+  gap: var(--space-2);
 }
 
 .admin__summary-body,
 .admin__summary > .field__error {
-  padding: 0 24px 20px;
+  padding: 0 var(--space-3) var(--space-3);
 }
 
 .admin__summary-body {
   display: grid;
-  gap: 16px;
+  gap: var(--space-2);
 }
 
 .admin__summary-overview {
@@ -63,13 +63,13 @@
 
 .admin__summary-sections {
   display: grid;
-  gap: 12px;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-2);
+  grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
   margin: 0;
 }
 
 .admin__summary-section {
-  padding: 12px 14px;
+  padding: var(--space-2);
   background: var(--surface-alt);
   border: 1px solid var(--border);
   border-radius: var(--radius-card);
@@ -81,7 +81,7 @@
   text-transform: uppercase;
   letter-spacing: 0.03em;
   color: var(--muted);
-  margin-bottom: 6px;
+  margin-bottom: var(--space-1);
 }
 
 .admin__summary-section dd {
@@ -93,7 +93,7 @@
 .admin__head h1 {
   font-size: clamp(1.75rem, 3vw, 2.25rem);
   letter-spacing: -0.03em;
-  margin-bottom: 8px;
+  margin-bottom: var(--space-1);
 }
 
 .admin__head p {
@@ -163,14 +163,15 @@
 .kpis {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 16px;
+  gap: var(--space-2);
 }
 
 .kpi {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  padding: 20px;
+  min-width: 0;
+  padding: var(--space-3);
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-card);
@@ -182,7 +183,7 @@
 }
 
 .kpi__value {
-  font-size: 2.25rem;
+  font-size: clamp(1.75rem, 1.2rem + 2.2vw, 2.25rem);
   font-weight: 500;
   letter-spacing: -0.03em;
   line-height: 1.15;
@@ -194,7 +195,7 @@
   flex-wrap: wrap;
   gap: 6px;
   margin-top: auto;
-  padding-top: 10px;
+  padding-top: var(--space-1);
 }
 
 .pill-button {
@@ -219,12 +220,24 @@
   }
 }
 
+/* Two columns on phones. The tiles run devices first (count, health), then
+   potholes (detections, confirmed, confidence); an odd last tile takes the
+   full row rather than sitting orphaned in half of it. */
 @media (max-width: 760px) {
   .kpis {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-  .kpi__value {
-    font-size: 1.75rem;
+  .kpi:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+  .kpi {
+    padding: var(--space-2);
+  }
+}
+
+@media (max-width: 359px) {
+  .kpis {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -240,9 +253,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: var(--space-2);
   flex-wrap: wrap;
-  padding: 20px 24px 12px;
+  padding: var(--space-3) var(--space-3) var(--space-2);
 }
 
 .panel__head h2 {
@@ -253,9 +266,9 @@
 .search {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-1);
   width: min(280px, 100%);
-  padding: 0 12px;
+  padding: 0 var(--space-2);
   background: var(--surface-alt);
   border: 1px solid var(--border);
   border-radius: var(--radius-btn);
@@ -269,7 +282,8 @@
 .search input {
   flex: 1;
   min-width: 0;
-  padding: 9px 0;
+  min-height: 40px;
+  padding: 0;
   border: 0;
   background: none;
   color: var(--ink);
@@ -281,15 +295,16 @@
 .chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  padding: 0 24px 16px;
+  gap: var(--space-1);
+  padding: 0 var(--space-3) var(--space-2);
 }
 
 .chip {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 12px;
+  gap: var(--space-1);
+  min-height: 32px;
+  padding: 0 var(--space-2);
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 9999px;
@@ -333,14 +348,14 @@
 
 .table th,
 .table td {
-  padding: 12px 16px;
+  padding: var(--space-2);
   text-align: left;
   white-space: nowrap;
 }
 
 .table th:first-child,
 .table td:first-child {
-  padding-left: 24px;
+  padding-left: var(--space-3);
 }
 
 .table thead th {
@@ -399,7 +414,7 @@
 .expander {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-1);
   padding: 0;
   border: 0;
   background: none;
@@ -424,15 +439,18 @@
 
 .detail {
   display: grid;
-  gap: 16px;
-  padding: 8px 0 8px 22px;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
   white-space: normal;
 }
 
 .detail__grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-  gap: 16px 24px;
+  gap: var(--space-2) var(--space-3);
   margin: 0;
 }
 
@@ -483,23 +501,23 @@
 }
 
 .empty {
-  padding: 32px 24px;
+  padding: var(--space-4) var(--space-3);
   color: var(--muted);
   text-align: center;
 }
 
 .empty-state {
   display: grid;
-  gap: 8px;
-  padding: 48px 24px;
+  gap: var(--space-1);
+  padding: var(--space-6) var(--space-3);
   text-align: center;
 }
 
 .banner {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
-  padding: 14px 16px;
+  gap: var(--space-2);
+  padding: var(--space-2);
   background: var(--red-pale);
   border: 1px solid #f5d0d1;
   border-radius: var(--radius-card);
@@ -514,7 +532,7 @@
 .admin__links {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: var(--space-1) var(--space-3);
   flex-wrap: wrap;
 }
 
@@ -526,8 +544,8 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 12px;
-  padding: 12px 24px;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
   border-top: 1px solid var(--border);
 }
 
@@ -546,8 +564,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   padding: 0;
   border: 1px solid var(--border);
   border-radius: var(--radius-btn);
@@ -575,7 +593,7 @@
 
 .clustermap {
   margin: 0;
-  padding: 20px 24px 24px;
+  padding: var(--space-3);
   border-top: 1px solid var(--border);
 }
 
@@ -583,9 +601,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: var(--space-2);
   flex-wrap: wrap;
-  margin-bottom: 12px;
+  margin-bottom: var(--space-2);
   color: var(--muted);
 }
 
@@ -603,7 +621,7 @@
 }
 
 .clustermap__note {
-  margin: 12px 0 0;
+  margin: var(--space-2) 0 0;
   color: var(--muted);
   font-size: 0.8125rem;
   line-height: 1.5;
@@ -649,15 +667,110 @@
   color: var(--ink);
 }
 
+/* On phones the bar becomes a fixed grid instead of free wrapping: brand on
+   top, the connection state beneath it, and the two actions sharing a row. */
 @media (max-width: 760px) {
+  .admin__bar-inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas:
+      'title title'
+      'status updated'
+      'refresh pause';
+    gap: var(--space-1) var(--space-2);
+    padding-block: var(--space-2);
+  }
+  .admin__title {
+    grid-area: title;
+  }
   .admin__controls {
-    width: 100%;
+    display: contents;
+  }
+  .admin__controls > .pill {
+    grid-area: status;
+    justify-self: start;
+    align-self: center;
+  }
+  .admin__updated {
+    grid-area: updated;
+    justify-self: end;
+    align-self: center;
+    min-width: 0;
+    text-align: right;
+  }
+  .admin__controls > .btn:nth-of-type(1) {
+    grid-area: refresh;
+  }
+  .admin__controls > .btn:nth-of-type(2) {
+    grid-area: pause;
   }
 }
 
 @media (max-width: 560px) {
+  .panel__head,
+  .clustermap,
+  .admin__summary-body,
+  .admin__summary > .field__error {
+    padding-inline: var(--space-2);
+  }
+  .panel__head {
+    padding-top: var(--space-2);
+  }
   .clustermap {
-    padding: 16px 16px 20px;
+    padding-block: var(--space-2);
+  }
+  .chips {
+    padding-inline: var(--space-2);
+  }
+  .table th:first-child,
+  .table td:first-child {
+    padding-left: var(--space-2);
+  }
+  .pager {
+    padding-inline: var(--space-2);
+  }
+  .search {
+    width: 100%;
+  }
+}
+
+/* Touch: every control in the tables, filters and pager reaches 44px. */
+@media (pointer: coarse) {
+  .chip,
+  .pager__step {
+    min-height: var(--tap);
+    min-width: var(--tap);
+  }
+  .search input {
+    min-height: var(--tap);
+  }
+  .table th button,
+  .expander,
+  .pill-button {
+    min-height: var(--tap);
+  }
+  .table th button {
+    min-width: var(--tap);
+  }
+  .pill-button {
+    align-content: center;
+  }
+  /* The coordinate keeps its underline tight to the text, so its hit area
+     grows invisibly instead; the whole 52px row is clickable as well. */
+  .cell-button {
+    position: relative;
+  }
+  .cell-button::after {
+    content: '';
+    position: absolute;
+    inset: -11px 0;
+  }
+  .table th,
+  .table td {
+    padding-block: 0;
+  }
+  .table td {
+    height: 52px;
   }
 }
 

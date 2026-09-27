@@ -50,7 +50,7 @@ export function GlossaryDialog({ open, onClose }) {
       <div className="glossary-dialog__card">
         <div className="glossary-dialog__head">
           <h2 id="glossary-title">What the values mean</h2>
-          <button type="button" className="glossary-dialog__close" aria-label="Close" onClick={onClose}>
+          <button type="button" className="icon-button" aria-label="Close" onClick={onClose}>
             <X size={18} weight="bold" aria-hidden="true" />
           </button>
         </div>

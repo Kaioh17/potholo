@@ -17,6 +17,7 @@ import {
 } from '@phosphor-icons/react'
 import Brand from '../components/Brand.jsx'
 import ClusterMap from '../components/ClusterMap.jsx'
+import Clamp from '../components/Clamp.jsx'
 import Pill from '../admin/Pill.jsx'
 import {
   activityStatus,
@@ -86,13 +87,15 @@ function FleetSummary() {
       </div>
       {state.status === 'done' && (
         <div className="admin__summary-body">
-          <p className="admin__summary-overview">{state.overview}</p>
+          <Clamp className="admin__summary-overview">{state.overview}</Clamp>
           {state.sections.length > 0 && (
             <dl className="admin__summary-sections">
               {state.sections.map((section) => (
                 <div key={section.key} className="admin__summary-section">
                   <dt>{section.title}</dt>
-                  <dd>{section.body}</dd>
+                  <dd>
+                    <Clamp>{section.body}</Clamp>
+                  </dd>
                 </div>
               ))}
             </dl>

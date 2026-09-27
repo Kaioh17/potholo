@@ -25,6 +25,19 @@
   --font-brand: 'Bricolage Grotesque', 'DM Sans', system-ui, sans-serif;
   --font-mono: ui-monospace, 'SF Mono', 'JetBrains Mono', monospace;
 
+  /* Spacing runs on an 8px grid with 16px as the base. Containers, cards and
+     sections take their padding from here; only inline text chrome (pills,
+     tags) and label-to-value gaps sit off the grid. */
+  --space-1: 8px;
+  --space-2: 16px;
+  --space-3: 24px;
+  --space-4: 32px;
+  --space-6: 48px;
+  --space-8: 64px;
+
+  /* Smallest comfortable touch target. */
+  --tap: 44px;
+
   --radius-card: 12px;
   --radius-btn: 6px;
   --ease: cubic-bezier(0.16, 1, 0.3, 1);

@@ -87,9 +87,9 @@ Routes:
 
 - `/` is the landing page.
 - `/demo` is a simulated drive through a pothole with mock phone readings.
-- `/map` shows the locations several vehicles agreed on, read live from the API.
+- `/admin` is the fleet dashboard, with a live map of the locations several vehicles agreed on. It reads `GET /v1/devices` and `GET /v1/clusters` from the API, refreshes every 5 seconds, and has no login yet.
   It needs the API running. The web app calls it at `VITE_API_URL`, which defaults to `http://127.0.0.1:8044`.
-- `/admin` is the fleet dashboard. It reads `GET /v1/devices` and `GET /v1/clusters` from the API, refreshes every 5 seconds, and has no login yet.
+- `/forecast` shows how the found potholes would grow if nobody filled them.
 - `/try` is where someone joins with a name and a phone model, then drives the same simulation as `/demo` with readings filed under their own device id. The user id is kept in the browser's local storage; there is no login.
 - `/login` is the login form. Nothing links to it now that the sign-in buttons say "Try it".
   It is UI only for now, because authentication arrives with the API.
@@ -126,7 +126,7 @@ python mock/seed_db.py --reset
 
 ## Design
 
-- The app name uses the Fredoka font.
+- The app name uses the Bricolage Grotesque font.
   Everything else uses DM Sans.
 - The look is flat and editorial: warm off-white, asphalt black, and road-marking amber as the single accent.
 - Icons come from Phosphor.
@@ -150,7 +150,11 @@ Never commit it.
 | Variable | Purpose |
 | --- | --- |
 | `POTHOLO_DATABASE_URL` | Database connection URL |
+| `POTHOLO_ENVIRONMENT` | `development` or `production`; production hides `/docs` |
+| `POTHOLO_CORS_ORIGINS` | Origins allowed to call the API, as a JSON array |
+| `VITE_API_URL` | API origin the web app calls, baked into the web bundle at build time |
 | `CHI311_API_KEY` | Chicago Open311 key, required before anything can be filed |
+| `VITE_STADIA_API_KEY` | Stadia Maps key, required for the Forecast page's basemap tiles in production |
 
 ## Publishing a branch
 
@@ -173,6 +177,8 @@ docker compose up -d --build
 - The web app listens on `127.0.0.1:8840`, for `https://potholo.usemaison.io`.
 - Point a TLS-terminating reverse proxy at those two ports.
 - The SQLite database is on the `api-data` volume.
-- `VITE_API_URL` is baked into the web bundle at build time (the `web` build arg in `docker-compose.yml`).
+- A `seed` service seeds it with the scenario catalogue and a demo corridor on first boot (`mock/seed_db.py`, through the real pipeline). It runs once per volume: if `api-data` already has a database, it exits immediately without touching it. Delete the volume (`docker compose down -v`) to reseed from empty.
+- `VITE_API_URL` and `VITE_STADIA_API_KEY` are baked into the web bundle at build time (the `web` build args in `docker-compose.yml`).
 - `POTHOLO_CORS_ORIGINS` must list the web origin.
-- `CHI311_API_KEY` is read from the shell or a `.env` next to `docker-compose.yml`.
+- `POTHOLO_ENVIRONMENT`, `POTHOLO_CORS_ORIGINS`, `VITE_API_URL`, `CHI311_API_KEY` and `VITE_STADIA_API_KEY` are read from the shell or a `.env` next to `docker-compose.yml`; unset, `POTHOLO_ENVIRONMENT`, `POTHOLO_CORS_ORIGINS` and `VITE_API_URL` fall back to their production values (the exposed domains above).
+- Without `VITE_STADIA_API_KEY`, the Forecast page's basemap tiles fail (OSM's tile server blocks direct hotlinking from a deployed app) and it falls back to the offline street outlines.

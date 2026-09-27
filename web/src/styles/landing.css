@@ -1,4 +1,7 @@
 /* Nav */
+/* The nav is pinned, but on desktop it slides away while reading down the page
+   and comes back on the first scroll up. On phones it stays put so the menu
+   button is always in reach. Keyboard focus inside it always brings it back. */
 .nav {
   position: sticky;
   top: 0;
@@ -7,24 +10,41 @@
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--border);
+  transition: transform 240ms var(--ease);
+}
+
+@media (min-width: 761px) {
+  .nav--hidden:not(:focus-within) {
+    transform: translateY(-100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav {
+    transition: none;
+  }
 }
 
 .nav__inner {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 24px;
+  gap: var(--space-3);
   height: 68px;
 }
 
 .nav__links {
   display: flex;
-  gap: 28px;
+  gap: var(--space-4);
   margin-inline: auto 0;
-  padding-right: 4px;
 }
 
 .nav__links a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--tap);
+  min-height: var(--tap);
   color: var(--muted);
   font-size: 0.9375rem;
   text-decoration: none;
@@ -35,9 +55,98 @@
   color: var(--ink);
 }
 
+.nav__links a[aria-current='page'] {
+  color: var(--ink);
+}
+
+.nav__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.nav__menu {
+  display: none;
+}
+
 @media (max-width: 760px) {
   .nav__links {
     display: none;
+  }
+  .nav__menu {
+    display: inline-grid;
+  }
+}
+
+/* Menu drawer (mobile) */
+.nav-drawer {
+  position: fixed;
+  inset: 0 0 0 auto;
+  width: min(320px, calc(100vw - 48px));
+  max-width: none;
+  height: 100dvh;
+  max-height: none;
+  margin: 0;
+  padding: var(--space-2);
+  border: 0;
+  border-left: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.nav-drawer[open] {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  animation: nav-drawer-in 240ms var(--ease);
+}
+
+.nav-drawer::backdrop {
+  background: rgba(17, 17, 17, 0.4);
+}
+
+.nav-drawer__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.nav-drawer__links {
+  display: grid;
+  border-top: 1px solid var(--border);
+}
+
+.nav-drawer__links a {
+  display: flex;
+  align-items: center;
+  min-height: 48px;
+  border-bottom: 1px solid var(--border);
+  color: var(--ink);
+  font-size: 1.0625rem;
+  text-decoration: none;
+}
+
+.nav-drawer__links a[aria-current='page'] {
+  color: var(--amber-ink);
+}
+
+.nav-drawer__cta {
+  width: 100%;
+}
+
+@keyframes nav-drawer-in {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-drawer[open] {
+    animation: none;
   }
 }
 
@@ -75,121 +184,24 @@
 .hero__actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: var(--space-2);
   margin-top: 8px;
 }
 
 .hero__art {
-  padding: 20px;
+  overflow: hidden;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-card);
 }
 
-.scene {
+.hero__video {
+  display: block;
   width: 100%;
   height: auto;
-}
-
-.scene__label {
-  font: 700 10px/1 var(--font-mono);
-  letter-spacing: 0.08em;
-  fill: var(--muted);
-}
-
-.scene__label--amber {
-  fill: var(--amber-ink);
-}
-
-.scene__label--light {
-  fill: #9a9994;
-}
-
-/* Gyro trace draws itself in once the hero art scrolls into view. */
-.scene__trace {
-  stroke-dasharray: 1000;
-  stroke-dashoffset: 1000;
-}
-
-.reveal.is-visible .scene__trace {
-  animation: scene-trace-draw 1.4s var(--ease) forwards;
-}
-
-.scene__label--pulse {
-  animation: scene-label-pulse 2.4s ease-in-out infinite;
-}
-
-/* The road surface reads as a live sensor grid: a wave of gyro data keeps
-   scrolling across it, under the car, the way a real reading would stream in. */
-.scene__wave {
-  animation: scene-wave-scroll 2.6s linear infinite;
-}
-
-.scene__lanes line {
-  animation: scene-lane-scroll 1.1s linear infinite;
-}
-
-.scene__pin {
-  animation: scene-pin-pulse 2.4s ease-in-out infinite;
-}
-
-@keyframes scene-trace-draw {
-  to {
-    stroke-dashoffset: 0;
-  }
-}
-
-@keyframes scene-label-pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.45;
-  }
-}
-
-@keyframes scene-wave-scroll {
-  from {
-    transform: translate(0, 368px);
-  }
-  to {
-    transform: translate(-60px, 368px);
-  }
-}
-
-@keyframes scene-lane-scroll {
-  from {
-    stroke-dashoffset: 0;
-  }
-  to {
-    stroke-dashoffset: -48;
-  }
-}
-
-@keyframes scene-pin-pulse {
-  0%,
-  100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.1);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .scene__trace {
-    stroke-dashoffset: 0;
-  }
-  .reveal.is-visible .scene__trace {
-    animation: none;
-  }
-  .scene__label--pulse,
-  .scene__wave,
-  .scene__lanes line,
-  .scene__pin {
-    animation: none;
-  }
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  background: #1b1f23;
 }
 
 @media (max-width: 900px) {
@@ -214,7 +226,7 @@
 
 .section__head {
   max-width: 40rem;
-  margin-bottom: 56px;
+  margin-bottom: var(--space-6);
 }
 
 .section__head h2 {
@@ -224,7 +236,7 @@
 }
 
 .eyebrow {
-  margin-bottom: 14px;
+  margin-bottom: var(--space-2);
   color: var(--muted);
   font: 700 0.75rem/1 var(--font-mono);
   letter-spacing: 0.08em;
@@ -283,12 +295,12 @@
   position: relative;
   display: grid;
   align-content: start;
-  gap: 14px;
-  padding: 28px 28px 8px 0;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-3) var(--space-1) 0;
 }
 
 .step + .step {
-  padding-left: 28px;
+  padding-left: var(--space-3);
   border-left: 1px solid var(--border);
 }
 
@@ -318,7 +330,7 @@
     grid-template-columns: repeat(2, 1fr);
   }
   .step {
-    padding: 28px 24px 28px 0;
+    padding: var(--space-3) var(--space-3) var(--space-3) 0;
     border-bottom: 1px solid var(--border);
   }
   .step + .step {
@@ -326,7 +338,7 @@
     border-left: 0;
   }
   .step:nth-child(even) {
-    padding-left: 24px;
+    padding-left: var(--space-3);
     border-left: 1px solid var(--border);
   }
 }
@@ -337,7 +349,7 @@
   }
   .step,
   .step:nth-child(even) {
-    padding: 24px 0;
+    padding: var(--space-3) 0;
     border-left: 0;
   }
 }
@@ -347,15 +359,15 @@
   display: grid;
   grid-template-columns: 1.4fr 1fr;
   grid-template-rows: auto auto;
-  gap: 20px;
+  gap: var(--space-3);
 }
 
 .card {
   display: grid;
   align-content: start;
   justify-items: start;
-  gap: 16px;
-  padding: 36px;
+  gap: var(--space-2);
+  padding: var(--space-4);
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-card);
@@ -403,7 +415,13 @@
     grid-row: auto;
   }
   .card {
-    padding: 28px 24px;
+    padding: var(--space-3);
+  }
+}
+
+@media (max-width: 560px) {
+  .card {
+    padding: var(--space-2);
   }
 }
 
@@ -417,12 +435,12 @@
 
 .window__bar {
   display: flex;
-  gap: 7px;
-  padding: 14px 16px;
+  gap: var(--space-1);
+  padding: var(--space-2);
   border-bottom: 1px solid var(--border);
 }
 
-.window__bar span {
+.window__bar span:not([class]) {
   width: 10px;
   height: 10px;
   border-radius: 50%;
@@ -432,8 +450,8 @@
 .window__body {
   display: grid;
   justify-items: center;
-  gap: 16px;
-  padding: 72px 24px 80px;
+  gap: var(--space-2);
+  padding: var(--space-8) var(--space-3) 80px;
   text-align: center;
   background-image: radial-gradient(circle at 50% 0%, rgba(242, 183, 5, 0.04), transparent 60%);
 }
@@ -465,9 +483,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 24px;
+  gap: var(--space-3);
   width: 100%;
-  padding: 22px 0;
+  padding: var(--space-3) 0;
   border: 0;
   background: none;
   color: var(--ink);
@@ -483,7 +501,7 @@
 
 .faq__a {
   max-width: 40rem;
-  padding: 0 40px 24px 0;
+  padding: 0 var(--space-6) var(--space-3) 0;
   color: var(--muted);
 }
 
@@ -498,7 +516,7 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 16px 32px;
+  gap: var(--space-2) var(--space-4);
 }
 
 .footer p {
@@ -506,23 +524,19 @@
   font-size: 0.9375rem;
 }
 
-.nav__links a[aria-current='page'] {
-  color: var(--ink);
-}
-
 .demo {
   padding-block: 24px 112px;
 }
 
 .demo__back {
-  margin-bottom: 24px;
+  margin-bottom: var(--space-3);
 }
 
 .demo__top {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: var(--space-2);
 }
 
 @media (max-width: 560px) {
@@ -533,14 +547,14 @@
 
 .demo__head {
   max-width: 44rem;
-  margin-bottom: 32px;
+  margin-bottom: var(--space-4);
 }
 
 .demo__head h1 {
   font-size: clamp(2.25rem, 4.4vw, 3.5rem);
   line-height: 1.08;
   letter-spacing: -0.035em;
-  margin-bottom: 20px;
+  margin-bottom: var(--space-2);
 }
 
 .demo__lede {
@@ -553,7 +567,7 @@
   /* Both columns size to their own content, so the square canvas sets the
      stage's height and the stage card never carries dead space around it. */
   grid-template-columns: minmax(0, 760px) minmax(300px, 1fr);
-  gap: 32px;
+  gap: var(--space-4);
   align-items: start;
   justify-content: center;
 }
@@ -571,9 +585,10 @@
 
 .demo__controls {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 16px;
-  padding: 14px 20px;
+  gap: var(--space-1) var(--space-2);
+  padding: var(--space-1) var(--space-2);
   border-bottom: 1px solid var(--border);
   background: var(--surface);
 }
@@ -586,8 +601,8 @@
 .recording {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: 20px 24px;
+  gap: var(--space-2);
+  padding: var(--space-3);
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-card);
@@ -601,7 +616,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--space-2);
 }
 
 .recording__title {
@@ -619,8 +634,8 @@
 .recording__row {
   display: flex;
   justify-content: space-between;
-  gap: 16px;
-  padding-block: 8px;
+  gap: var(--space-2);
+  padding-block: var(--space-1);
   border-top: 1px solid var(--border);
   font-size: 0.9375rem;
 }
@@ -642,9 +657,10 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: var(--space-2);
   width: 100%;
-  padding: 12px 0;
+  min-height: var(--tap);
+  padding: 0;
   border: 0;
   background: none;
   color: var(--ink);
@@ -673,15 +689,15 @@
 }
 
 .glossary-dialog__card {
-  padding: 20px 24px 12px;
+  padding: var(--space-2) var(--space-3) var(--space-2);
 }
 
 .glossary-dialog__head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 8px;
+  gap: var(--space-2);
+  margin-bottom: var(--space-1);
 }
 
 .glossary-dialog__head h2 {
@@ -689,26 +705,12 @@
   letter-spacing: 0;
 }
 
-.glossary-dialog__close {
-  display: inline-flex;
-  padding: 6px;
-  border: 0;
-  border-radius: var(--radius-btn);
-  background: none;
-  color: var(--ink);
-  cursor: pointer;
-}
-
-.glossary-dialog__close:hover {
-  background: #efeeea;
-}
-
 .glossary__list {
   margin: 0;
 }
 
 .glossary__item {
-  padding-block: 10px;
+  padding-block: var(--space-1);
   border-top: 1px solid var(--border);
 }
 
@@ -737,7 +739,7 @@
 }
 
 .metric {
-  padding: 12px 14px;
+  padding: var(--space-1) var(--space-2);
   background: var(--surface-alt);
 }
 
@@ -776,7 +778,7 @@
 
 .recording__body {
   margin: 0;
-  padding: 12px 14px;
+  padding: var(--space-2);
   height: 176px;
   flex: none;
   overflow: auto;
@@ -796,8 +798,8 @@
 
 .recording__cta {
   display: grid;
-  gap: 12px;
-  padding: 16px;
+  gap: var(--space-2);
+  padding: var(--space-2);
   background: var(--amber-pale);
   border: 1px solid var(--border);
   border-radius: var(--radius-btn);
@@ -820,5 +822,18 @@
   .demo__canvas {
     width: min(100%, 420px);
     margin-inline: auto;
+  }
+}
+
+@media (max-width: 560px) {
+  .recording,
+  .glossary-dialog__card {
+    padding: var(--space-2);
+  }
+  .window__body {
+    padding: var(--space-6) var(--space-2);
+  }
+  .faq__a {
+    padding-right: 0;
   }
 }

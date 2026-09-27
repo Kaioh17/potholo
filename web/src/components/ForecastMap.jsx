@@ -6,10 +6,11 @@ import RadarLayer from './RadarLayer.jsx'
 /**
  * Downtown Chicago over time: what was found, and what the model says it becomes.
  *
- * The basemap is OpenStreetMap, served through Carto's OSM-derived light style --
- * the same data the API's reverse geocoder already uses, free and needing no
- * key. The tiles are drawn *inside* the SVG rather than beneath it, which keeps
- * the map, the pins, the radar and the weather in one coordinate system: no
+ * The basemap is OpenStreetMap data, served as raster tiles through Stadia
+ * Maps' Alidade Smooth style -- the same underlying data the API's reverse
+ * geocoder already uses. The tiles are drawn *inside* the SVG rather than
+ * beneath it, which keeps the map, the pins, the radar and the weather in
+ * one coordinate system: no
  * second layout to keep in sync, and a pin cannot drift off its street.
  *
  * That only works if the projection is the tiles' own, so this is true Web
@@ -29,13 +30,16 @@ import RadarLayer from './RadarLayer.jsx'
 
 const TILE = 256
 const ZOOM = 16
-// OpenStreetMap's own tile server. Carto's free endpoint was tried first and
-// returns an identical 2,049-byte placeholder for every style and zoom -- it
-// wants an account now -- so this is the one that actually serves map data.
-// OSM's tile policy asks for attribution and rules out bulk use; a demo page
-// drawing two dozen tiles is within it, but a deployed product should move to
-// a paid provider or self-host.
-const TILE_URL = (z, x, y) => `https://tile.openstreetmap.org/${z}/${x}/${y}.png`
+// Stadia Maps' Alidade Smooth style: OSM data, raster tiles, and a light
+// palette close to this app's own. tile.openstreetmap.org and Carto's free
+// endpoint were tried first -- OSM's own server blocks direct hotlinking from
+// a deployed app under its tile usage policy, and Carto's free endpoint now
+// wants an account -- so this is the provider that actually serves tiles in
+// production. The key is domain-locked on Stadia's dashboard, not secret, but
+// still comes from the environment so it isn't hard-coded per deploy target.
+const STADIA_KEY = import.meta.env.VITE_STADIA_API_KEY
+const TILE_URL = (z, x, y) =>
+  `https://tiles.stadiamaps.com/tiles/alidade_smooth/${z}/${x}/${y}.png${STADIA_KEY ? `?api_key=${STADIA_KEY}` : ''}`
 
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v))
 
@@ -282,11 +286,11 @@ export default function ForecastMap({
 
       <ScaleBar projection={projection} compact={compact} />
 
-      {/* Required by OpenStreetMap's licence and by Carto's terms. */}
+      {/* Required by Stadia Maps' and OpenStreetMap's terms. */}
       <text className="fmap__credit" x={width - 6} y={height - 5}>
         {tilesDown
           ? 'Streets: City of Chicago open data'
-          : '© OpenStreetMap contributors'}
+          : '© Stadia Maps © OpenStreetMap contributors'}
       </text>
     </svg>
   )

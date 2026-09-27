@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { ArrowLeft, ChatCircleText, DeviceMobile, Eye, Info, SignOut } from '@phosphor-icons/react'
 import Nav from '../components/Nav.jsx'
 import Footer from '../components/Footer.jsx'
+import Clamp from '../components/Clamp.jsx'
 import { API_URL } from '../admin/useFleet.js'
 import { DemoPlayer } from './Demo.jsx'
 
@@ -263,13 +264,15 @@ function Summary({ userId }) {
       </div>
       {state.status === 'done' && (
         <div className="try__summary-body">
-          <p className="try__summary-text">{state.overview}</p>
+          <Clamp className="try__summary-text">{state.overview}</Clamp>
           {state.sections.length > 0 && (
             <dl className="try__summary-sections">
               {state.sections.map((section) => (
                 <div key={section.key} className="try__summary-section">
                   <dt>{section.title}</dt>
-                  <dd>{section.body}</dd>
+                  <dd>
+                    <Clamp>{section.body}</Clamp>
+                  </dd>
                 </div>
               ))}
             </dl>
