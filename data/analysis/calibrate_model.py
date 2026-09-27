@@ -244,6 +244,40 @@ def growth_rate(reopen: dict, findings: dict) -> dict:
     print(f"  fast (p25 interval) k = {fast:.4f}   slow (p75 interval) k = {slow:.4f}")
     print(f"  that is a {fast/slow:.1f}x spread -- carried into the forecast as a band,")
     print("  not averaged away.")
+
+    # How much does the *choice* of anchor span matter, against how much the
+    # population spread matters? If picking 40->80 rather than 10->45 moved k by
+    # as much as the p25-p75 range does, the model would be mostly my opinion.
+    print("\nanchor sensitivity -- same 266 days read four ways:")
+    spans = [(s0, s1, "an existing hole 40 -> 80 (used)"),
+             (10.0, 45.0, "fresh patch 10 -> reportable 45"),
+             (5.0, 40.0, "fresh patch 5 -> reportable 40"),
+             (25.0, 70.0, "detectable 25 -> severe 70")]
+    alts = []
+    for lo, hi, label in spans:
+        alt = float((logit(hi) - logit(lo)) / months)
+        alts.append(alt)
+        print(f"  k = {alt:.4f}   {label}")
+    span_ratio = max(alts) / min(alts)
+    print(f"  choosing the span moves k by {span_ratio:.1f}x;")
+    print(f"  the population spread moves it by {fast/slow:.1f}x.")
+    print("  The spread dominates, so the model is mostly the data's, not mine.")
+
+    # Per-pothole rates. Using one k for every hole says they all degrade
+    # identically, which is certainly false and makes the whole fleet cross into
+    # severe on the same month. The interval distribution is close to lognormal
+    # -- two independent quantile pairs agree on sigma -- so a hole can be given
+    # its own rate drawn from the measured population instead of the median.
+    days = reopen["days_between_reports"]
+    mu = float(np.log(reopen["median_days"]))
+    sigma_iqr = float((np.log(days["p75"]) - np.log(days["p25"])) / (2 * 0.6745))
+    sigma_tail = float((np.log(days["p90"]) - np.log(days["p10"])) / (2 * 1.2816))
+    sigma = (sigma_iqr + sigma_tail) / 2
+    print("\nlognormal fit to the re-report interval:")
+    print(f"  mu = ln({reopen['median_days']:.0f}) = {mu:.3f}")
+    print(f"  sigma from p25/p75 = {sigma_iqr:.3f}, from p10/p90 = {sigma_tail:.3f}")
+    print(f"  -> sigma = {sigma:.3f}  (the two agree, so lognormal is a fair fit)")
+
     return {
         "form": "logistic",
         "severity_cap": cap,
@@ -255,6 +289,22 @@ def growth_rate(reopen: dict, findings: dict) -> dict:
             "to_severity": s1,
             "over_months": float(months),
             "basis": "median interval between repeat 311 reports on the same block",
+        },
+        "anchor_sensitivity": {
+            "alternatives": [
+                {"from": lo, "to": hi, "k": alt, "label": label}
+                for (lo, hi, label), alt in zip(spans, alts)
+            ],
+            "span_choice_ratio": span_ratio,
+            "population_spread_ratio": float(fast / slow),
+        },
+        # Enough to draw a per-pothole rate: interval ~ LogNormal(mu, sigma) in
+        # days, and k for that hole is logit_span / (interval / 30.4).
+        "rate_population": {
+            "interval_log_mu": mu,
+            "interval_log_sigma": sigma,
+            "logit_span": float(logit(s1) - logit(s0)),
+            "days_per_month": 30.4,
         },
         "confidence": "low - no published growth rate exists for untreated potholes",
     }

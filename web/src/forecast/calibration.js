@@ -538,6 +538,42 @@ export default {
       "over_months": 8.75,
       "basis": "median interval between repeat 311 reports on the same block"
     },
+    "anchor_sensitivity": {
+      "alternatives": [
+        {
+          "from": 40.0,
+          "to": 80.0,
+          "k": 0.20477251076892056,
+          "label": "an existing hole 40 -> 80 (used)"
+        },
+        {
+          "from": 10.0,
+          "to": 45.0,
+          "k": 0.22817758649989353,
+          "label": "fresh patch 10 -> reportable 45"
+        },
+        {
+          "from": 5.0,
+          "to": 40.0,
+          "k": 0.2901684424066601,
+          "label": "fresh patch 5 -> reportable 40"
+        },
+        {
+          "from": 25.0,
+          "to": 70.0,
+          "k": 0.22238973132060724,
+          "label": "detectable 25 -> severe 70"
+        }
+      ],
+      "span_choice_ratio": 1.4170282979735802,
+      "population_spread_ratio": 6.737499999999999
+    },
+    "rate_population": {
+      "interval_log_mu": 5.583496308781699,
+      "interval_log_sigma": 1.3625393086385236,
+      "logit_span": 1.791759469228055,
+      "days_per_month": 30.4
+    },
     "confidence": "low - no published growth rate exists for untreated potholes"
   },
   "repair": {

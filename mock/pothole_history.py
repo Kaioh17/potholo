@@ -48,6 +48,25 @@ STREETS = ROOT / "web" / "src" / "forecast" / "streets.js"
 CLASS_WEIGHT = {1: 0.6, 2: 3.0, 3: 2.0, 4: 1.0}
 
 
+def draw_rate(rng: random.Random, pop: dict) -> tuple[float, float]:
+    """A growth rate for one pothole, drawn from the measured population.
+
+    Giving every hole the median rate says they all degrade identically, which
+    is certainly false and makes the entire fleet cross into severe in the same
+    month -- an artefact of the model, not a finding. The interval between
+    repeat reports on a Chicago block is close to lognormal, so each hole gets
+    its own interval from that distribution and the rate that implies.
+
+    This is legitimate here because these potholes are synthetic: the point is a
+    realistic *spread*, and the spread is measured. For a real cluster we could
+    not do this -- nothing tells us which rate a particular hole has drawn, so
+    a real forecast uses the population median and shows the full band.
+    """
+    days = rng.lognormvariate(pop["interval_log_mu"], pop["interval_log_sigma"])
+    days = max(21.0, min(days, 6 * 365.0))  # keep the tails physical
+    return pop["logit_span"] / (days / pop["days_per_month"]), days
+
+
 def load_damage_index() -> tuple[list[float], dict]:
     """Read the monthly damage index out of the generated calibration module."""
     text = CALIBRATION.read_text(encoding="utf-8")
@@ -167,6 +186,8 @@ def generate(years: int, count: int, seed: int) -> dict:
         if arterial:
             base = min(100.0, base * 1.12)
 
+        k_i, interval_days = draw_rate(rng, calibration["growth"]["rate_population"])
+
         devices = max(1, int(rng.betavariate(1.6, 4.0) * 12) + 1)
         passes = devices + int(rng.expovariate(1 / 6.0))
         detections = max(1, min(passes, int(devices * rng.uniform(0.6, 1.4))))
@@ -193,6 +214,8 @@ def generate(years: int, count: int, seed: int) -> dict:
                 "first_seen": born.isoformat().replace("+00:00", "Z"),
                 "last_seen": now.isoformat().replace("+00:00", "Z"),
                 "street": street,
+                "k": round(k_i, 5),
+                "reopen_days": round(interval_days),
                 "arterial": arterial,
                 "synthetic": True,
             }
@@ -245,6 +268,13 @@ def main() -> None:
     peak = max(data["births_by_month"].values())
     for month, n in data["births_by_month"].items():
         print(f"  {month}  {n:>3}  {'#' * int(n / peak * 40)}")
+
+    ks = sorted(p["k"] for p in data["potholes"])
+    n = len(ks)
+    print(f"\ngrowth rate drawn per pothole (population median {ks[n//2]:.3f}):")
+    print(f"  p10 {ks[n//10]:.3f}   p25 {ks[n//4]:.3f}   p50 {ks[n//2]:.3f}"
+          f"   p75 {ks[3*n//4]:.3f}   p90 {ks[9*n//10]:.3f}")
+    print(f"  fastest {ks[-1]:.3f}, slowest {ks[0]:.3f} -- a {ks[-1]/ks[0]:.0f}x range")
 
     statuses: dict[str, int] = {}
     for hole in data["potholes"]:

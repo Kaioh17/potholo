@@ -811,3 +811,205 @@
   .fexp__body { grid-template-columns: minmax(0, 1fr); }
   .fcast__grid { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* Method ----------------------------------------------------------------- */
+
+.method {
+  margin-top: 12px;
+  padding: 24px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+}
+
+.method h2 {
+  margin: 0 0 6px;
+  font-size: 1.25rem;
+  letter-spacing: -0.01em;
+}
+
+.method__lede {
+  margin: 0 0 20px;
+  max-width: 76ch;
+  color: var(--ink-soft);
+  line-height: 1.6;
+}
+
+.method__sub {
+  margin: 24px 0 10px;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.method p {
+  max-width: 76ch;
+  line-height: 1.6;
+  color: var(--ink-soft);
+}
+
+.method code {
+  padding: 1px 5px;
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font: 500 0.875em var(--font-mono);
+}
+
+/* Sources ---------------------------------------------------------------- */
+
+.method__sources {
+  display: grid;
+  gap: 1px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.method__sources li {
+  display: grid;
+  grid-template-columns: minmax(200px, 1fr) minmax(0, 2fr) minmax(180px, 1fr);
+  gap: 14px;
+  align-items: baseline;
+  padding: 10px 14px;
+  background: var(--surface);
+  font-size: 0.875rem;
+}
+
+.method__sources a {
+  font-weight: 600;
+  color: var(--ink);
+  text-decoration: none;
+  border-bottom: 1px solid var(--amber);
+}
+
+.method__sources a:hover { border-bottom-color: var(--ink); }
+
+.method__detail { color: var(--ink-soft); }
+.method__gives { color: var(--muted); font-size: 0.8125rem; }
+
+.method__note {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+/* The formula gets room to breathe: it is the definition of the scale every
+   other number on the page is quoted in. */
+.method__eq {
+  margin: 10px 0;
+  padding: 10px 14px;
+  background: var(--surface-alt);
+  border-left: 2px solid var(--amber);
+  border-radius: 4px;
+  font: 500 1rem var(--font-mono);
+  color: var(--ink);
+}
+
+/* Numbered derivation ---------------------------------------------------- */
+
+.method__steps {
+  display: grid;
+  gap: 18px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: none;
+}
+
+.method__step {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+
+.method__n {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--surface);
+  font: 700 0.8125rem var(--font-mono);
+}
+
+.method__step h3 {
+  margin: 3px 0 6px;
+  font-size: 0.9375rem;
+}
+
+.method__step p { margin: 0 0 8px; font-size: 0.9375rem; }
+.method__step p:last-child { margin-bottom: 0; }
+
+.method__math {
+  margin: 8px 0;
+  padding: 12px 14px;
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font: 500 0.8125rem/1.7 var(--font-mono);
+  color: var(--ink);
+  overflow-x: auto;
+}
+
+/* The single assumption in the chain is marked, not buried. */
+.method__assumed {
+  padding: 10px 12px;
+  background: var(--amber-pale);
+  border: 1px solid #f0e2b6;
+  border-radius: 6px;
+  color: var(--amber-ink) !important;
+  font-size: 0.875rem !important;
+}
+
+.method__check {
+  padding: 10px 12px;
+  background: var(--green-pale);
+  border: 1px solid #d5e3d3;
+  border-radius: 6px;
+  color: var(--green-ink) !important;
+  font-size: 0.875rem !important;
+}
+
+.method__alts {
+  display: grid;
+  gap: 4px;
+  margin: 6px 0 10px;
+  padding: 0;
+  list-style: none;
+}
+
+.method__alts li {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  font-size: 0.875rem;
+}
+
+.method__alts span { color: var(--muted); }
+
+.method__tells {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding-left: 20px;
+  max-width: 76ch;
+}
+
+.method__tells li {
+  color: var(--ink-soft);
+  font-size: 0.9375rem;
+  line-height: 1.6;
+}
+
+@media (max-width: 860px) {
+  .method__sources li { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+  .method { padding: 16px; }
+}

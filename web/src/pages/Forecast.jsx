@@ -14,6 +14,7 @@ import Nav from '../components/Nav.jsx'
 import ForecastMap from '../components/ForecastMap.jsx'
 import WeatherLayer from '../components/WeatherLayer.jsx'
 import Conditions from '../components/Conditions.jsx'
+import Method from '../components/Method.jsx'
 import history from '../forecast/history.js'
 import {
   climateFor,
@@ -386,6 +387,8 @@ export default function Forecast() {
               </li>
             </ul>
           </details>
+
+          <Method />
         </div>
       </main>
 

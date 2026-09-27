@@ -43,6 +43,30 @@ const K_SLOW = calibration.growth.k_slow
 
 const DAMAGE = MONTHS.map((m) => calibration.damage_driver.monthly_damage_index[m])
 
+// The band is the population's p25-p75 spread expressed as a ratio, so it
+// brackets whatever central rate a given pothole has rather than a fixed pair
+// of rates. Without this a hole that drew a fast rate would sit outside its own
+// uncertainty band, which looks like a bug and reads like one.
+const BAND_SLOW = K_SLOW / K
+const BAND_FAST = K_FAST / K
+
+/**
+ * The growth rate to use for one pothole.
+ *
+ * Synthetic potholes carry their own `k`, drawn from the measured distribution
+ * of re-report intervals, because giving every hole the median rate makes the
+ * whole fleet cross into severe in the same month -- an artefact of the model
+ * rather than a finding about roads.
+ *
+ * A real cluster has no `k` and falls back to the population median, which is
+ * the honest answer: nothing we measure about a single pothole tells us which
+ * rate it drew.
+ */
+export function rateFor(cluster) {
+  const k = cluster?.k
+  return Number.isFinite(k) && k > 0 ? k : K
+}
+
 const DAY_MS = 86_400_000
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v))
 const daysInMonth = (year, month) => new Date(year, month + 1, 0).getDate()
@@ -120,12 +144,14 @@ export function severityAt(cluster, date, { forecastFrom, from } = {}) {
     return { severity: cluster.severity, lo: cluster.severity, hi: cluster.severity, known: true }
   }
   const damage = damageMonths(start, target)
+  const k = rateFor(cluster)
   return {
-    severity: grow(cluster.severity, damage, K),
-    lo: grow(cluster.severity, damage, K_SLOW),
-    hi: grow(cluster.severity, damage, K_FAST),
+    severity: grow(cluster.severity, damage, k),
+    lo: grow(cluster.severity, damage, k * BAND_SLOW),
+    hi: grow(cluster.severity, damage, k * BAND_FAST),
     known: false,
     damageMonths: damage,
+    k,
   }
 }
 
@@ -219,6 +245,8 @@ export function monthsToReach(cluster, threshold, { origin = new Date(), limit =
 export const model = {
   cap: CAP,
   k: K,
+  bandSlow: BAND_SLOW,
+  bandFast: BAND_FAST,
   kFast: K_FAST,
   kSlow: K_SLOW,
   damageIndex: DAMAGE,
