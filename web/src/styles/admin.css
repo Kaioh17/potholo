@@ -458,8 +458,154 @@
   margin-top: 2px;
 }
 
+/* Pager ---------------------------------------------------------------- */
+
+/* Sits between the table and the map, so a page turn visibly moves both. */
+
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 12px 24px;
+  border-top: 1px solid var(--border);
+}
+
+.pager__status {
+  margin: 0;
+  color: var(--muted);
+  font: 500 0.8125rem var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.pager__page {
+  color: var(--muted);
+}
+
+.pager__step {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-btn);
+  background: var(--surface);
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: border-color 180ms var(--ease);
+}
+
+.pager__step:hover:not(:disabled) {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+.pager__step:disabled {
+  color: #c9c8c4;
+  cursor: default;
+}
+
+/* Cluster map ---------------------------------------------------------- */
+
+/* Drawn from the rows of the table above it, inside the same panel so the
+   filter chips plainly govern both. The .cmap__* rules themselves live in
+   map.css; only the frame and the admin's own palette are set here. */
+
+.clustermap {
+  margin: 0;
+  padding: 20px 24px 24px;
+  border-top: 1px solid var(--border);
+}
+
+.clustermap__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+  color: var(--muted);
+}
+
+.clustermap__keys {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.clustermap__canvas {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.clustermap__note {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+/* The same status should not be one colour in the table and another on the
+   map, so the pins follow clusterStatus() from status.js. Scoped to .admin:
+   the standalone /map page has its own legend and keeps its own colours. */
+
+.admin .cmap__pin--candidate .cmap__dot {
+  fill: var(--amber-pale);
+  stroke: var(--amber-ink);
+}
+
+.admin .cmap__pin--confirmed .cmap__dot {
+  fill: var(--green-pale);
+  stroke: var(--green-ink);
+}
+
+.admin .cmap__pin--reported .cmap__dot {
+  fill: var(--blue-pale);
+  stroke: var(--blue-ink);
+}
+
+/* Ties a selected row to its pin: both carry the same amber wash. */
+
+.table tbody tr.is-selected:not(.detail-row),
+.table tbody tr.is-selected:not(.detail-row):hover {
+  background: var(--amber-pale);
+}
+
+.cell-button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border);
+}
+
+.cell-button:hover,
+.cell-button[aria-pressed='true'] {
+  border-bottom-color: var(--ink);
+  color: var(--ink);
+}
+
 @media (max-width: 760px) {
   .admin__controls {
     width: 100%;
+  }
+}
+
+@media (max-width: 560px) {
+  .clustermap {
+    padding: 16px 16px 20px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pager__step {
+    transition: none;
   }
 }

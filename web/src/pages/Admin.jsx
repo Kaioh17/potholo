@@ -4,13 +4,17 @@ import {
   ArrowClockwise,
   ArrowLeft,
   CaretDown,
+  CaretLeft,
+  CaretRight,
   CaretUp,
   MagnifyingGlass,
   Pause,
   Play,
   WarningCircle,
+  X,
 } from '@phosphor-icons/react'
 import Brand from '../components/Brand.jsx'
+import ClusterMap from '../components/ClusterMap.jsx'
 import Pill from '../admin/Pill.jsx'
 import {
   activityStatus,
@@ -253,18 +257,94 @@ const CLUSTER_FILTERS = [
   { id: 'candidate', label: 'Candidates' },
 ]
 
+const CLUSTER_PAGE_SIZE = 10
+
+// Legend keys, in the order a hole moves through: spotted, agreed on, filed.
+const CLUSTER_KEYS = [
+  ['candidate', 'Candidate'],
+  ['confirmed', 'Confirmed'],
+  ['reported', 'Reported'],
+]
+
+// Status is ordinal, not alphabetical: this is the order a hole travels, so
+// ranking by it sorts locations by how far along they are, which is the only
+// ordering of a status that means anything.
+const CLUSTER_RANK = { candidate: 0, confirmed: 1, reported: 2 }
+
+// Every column here is rankable, but not through one shared accessor -- a
+// location needs longitude as a tiebreak behind latitude -- so each column
+// carries its own comparator and returns a number.
+const CLUSTER_COLUMNS = [
+  { key: 'location', label: 'Location', compare: (a, b) => a.lat - b.lat || a.lon - b.lon },
+  { key: 'status', label: 'Status', compare: (a, b) => CLUSTER_RANK[a.status] - CLUSTER_RANK[b.status] },
+  { key: 'severity', label: 'Severity', compare: (a, b) => a.severity - b.severity },
+  { key: 'confidence', label: 'Confidence', compare: (a, b) => a.confidence - b.confidence },
+  { key: 'devices', label: 'Devices', compare: (a, b) => a.devices - b.devices },
+  { key: 'hit_rate', label: 'Hit rate', compare: (a, b) => a.hit_rate - b.hit_rate },
+  { key: 'last_seen', label: 'Last seen', compare: (a, b) => new Date(a.last_seen) - new Date(b.last_seen) },
+]
+
 function ClusterList({ clusters, now }) {
   const [filter, setFilter] = useState('all')
-  const shown = clusters.filter((c) => filter === 'all' || c.status === filter)
+  const [selectedId, setSelectedId] = useState(null)
+  // Worst first: on an operations dashboard the severe holes are the point.
+  const [sort, setSort] = useState({ key: 'severity', dir: 'desc' })
+  const [page, setPage] = useState(1)
+  const [showAllOnMap, setShowAllOnMap] = useState(false)
+
+  // The filtered, ranked list the table pages through and the map draws from,
+  // so the chips and the column sort govern both at once and the two can never
+  // show a different set of holes. Memoised because the map projects from this
+  // array's identity, and the dashboard re-renders every second to update the
+  // "last seen" column.
+  const sorted = useMemo(() => {
+    const column = CLUSTER_COLUMNS.find((c) => c.key === sort.key)
+    const sign = sort.dir === 'asc' ? 1 : -1
+    return clusters
+      .filter((c) => filter === 'all' || c.status === filter)
+      .sort((a, b) => column.compare(a, b) * sign)
+  }, [clusters, filter, sort])
+
+  // Clamped rather than reset through an effect, so a poll that drops the last
+  // row of the final page slides back a page instead of showing a blank table.
+  const pageCount = Math.max(1, Math.ceil(sorted.length / CLUSTER_PAGE_SIZE))
+  const current = Math.min(page, pageCount)
+  const from = (current - 1) * CLUSTER_PAGE_SIZE
+  const rows = useMemo(() => sorted.slice(from, from + CLUSTER_PAGE_SIZE), [sorted, from])
+
+  const onMap = showAllOnMap ? sorted : rows
+
+  // A selection that the filter, the sort or a page turn has moved out of view
+  // is dropped rather than kept invisibly, so the highlighted row and the
+  // ringed pin always agree. Derived during render, not synced in an effect.
+  const selected = onMap.find((c) => c.cluster_id === selectedId) ?? null
+  const toggleSelect = (id) => setSelectedId((prev) => (prev === id ? null : id))
+
+  // Re-ranking moves every row, so the page number stops meaning anything.
+  const toggleSort = (key) => {
+    setSort((s) => (s.key === key ? { key, dir: s.dir === 'asc' ? 'desc' : 'asc' } : { key, dir: 'desc' }))
+    setPage(1)
+  }
+
+  const changeFilter = (id) => {
+    setFilter(id)
+    setPage(1)
+  }
 
   return (
     <section className="panel" aria-labelledby="clusters-title">
       <div className="panel__head">
         <h2 id="clusters-title">Pothole locations</h2>
+        {selected && (
+          <button type="button" className="btn btn--ghost btn--sm" onClick={() => setSelectedId(null)}>
+            <X size={16} weight="bold" aria-hidden="true" />
+            Clear selection
+          </button>
+        )}
       </div>
       <div className="chips" role="group" aria-label="Filter locations">
         {CLUSTER_FILTERS.map((f) => (
-          <button key={f.id} type="button" className="chip" aria-pressed={filter === f.id} onClick={() => setFilter(f.id)}>
+          <button key={f.id} type="button" className="chip" aria-pressed={filter === f.id} onClick={() => changeFilter(f.id)}>
             {f.label}
             <span>{f.id === 'all' ? clusters.length : clusters.filter((c) => c.status === f.id).length}</span>
           </button>
@@ -275,18 +355,28 @@ function ClusterList({ clusters, now }) {
         <table className="table">
           <thead>
             <tr>
-              {['Location', 'Status', 'Severity', 'Confidence', 'Devices', 'Hit rate', 'Last seen'].map((label) => (
-                <th key={label} scope="col"><span className="th-label">{label}</span></th>
+              {CLUSTER_COLUMNS.map((c) => (
+                <th key={c.key} scope="col" aria-sort={sort.key === c.key ? (sort.dir === 'asc' ? 'ascending' : 'descending') : 'none'}>
+                  <button type="button" onClick={() => toggleSort(c.key)}>
+                    {c.label}
+                    {sort.key === c.key && (sort.dir === 'asc' ? <CaretUp size={12} weight="bold" /> : <CaretDown size={12} weight="bold" />)}
+                  </button>
+                </th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {shown.map((c) => {
+            {rows.map((c) => {
               const severity = severityStatus(c.severity)
               const confidence = confidenceStatus(c.confidence)
+              const isSelected = c.cluster_id === selected?.cluster_id
               return (
-                <tr key={c.cluster_id}>
-                  <td className="mono">{c.lat.toFixed(5)}, {c.lon.toFixed(5)}</td>
+                <tr key={c.cluster_id} className={isSelected ? 'is-selected' : ''}>
+                  <td className="mono">
+                    <button type="button" className="cell-button" aria-pressed={isSelected} onClick={() => toggleSelect(c.cluster_id)}>
+                      {c.lat.toFixed(5)}, {c.lon.toFixed(5)}
+                    </button>
+                  </td>
                   <td><Pill tone={clusterStatus(c.status).tone}>{clusterStatus(c.status).label}</Pill></td>
                   <td><Pill tone={severity.tone}>{severity.label} {c.severity.toFixed(0)}</Pill></td>
                   <td><Pill tone={confidence.tone}>{confidence.label}</Pill></td>
@@ -303,8 +393,65 @@ function ClusterList({ clusters, now }) {
             })}
           </tbody>
         </table>
-        {shown.length === 0 && <p className="empty">No locations in this state.</p>}
+        {sorted.length === 0 && <p className="empty">No locations in this state.</p>}
       </div>
+
+      {sorted.length > 0 && (
+        <nav className="pager" aria-label="Pothole location pages">
+          <button
+            type="button"
+            className="pager__step"
+            onClick={() => setPage(current - 1)}
+            disabled={current === 1}
+            aria-label="Previous ten locations"
+          >
+            <CaretLeft size={14} weight="bold" aria-hidden="true" />
+          </button>
+          <p className="pager__status" aria-live="polite">
+            {from + 1}-{Math.min(from + CLUSTER_PAGE_SIZE, sorted.length)} of {sorted.length}
+            <span className="pager__page"> &middot; page {current} of {pageCount}</span>
+          </p>
+          <button
+            type="button"
+            className="pager__step"
+            onClick={() => setPage(current + 1)}
+            disabled={current === pageCount}
+            aria-label="Next ten locations"
+          >
+            <CaretRight size={14} weight="bold" aria-hidden="true" />
+          </button>
+        </nav>
+      )}
+
+      {onMap.length > 0 && (
+        <figure className="clustermap">
+          <figcaption className="clustermap__head">
+            <span className="th-label">
+              {showAllOnMap
+                ? `Map of all ${sorted.length} location${sorted.length === 1 ? '' : 's'}`
+                : `Map of the ${rows.length} location${rows.length === 1 ? '' : 's'} on this page`}
+            </span>
+            <span className="clustermap__keys">
+              {CLUSTER_KEYS.map(([status, label]) => (
+                <Pill key={status} tone={clusterStatus(status).tone}>{label}</Pill>
+              ))}
+              {sorted.length > rows.length && (
+                <button type="button" className="chip" aria-pressed={showAllOnMap} onClick={() => setShowAllOnMap((v) => !v)}>
+                  {showAllOnMap ? 'This page only' : `All ${sorted.length}`}
+                </button>
+              )}
+            </span>
+          </figcaption>
+          <div className="clustermap__canvas">
+            <ClusterMap clusters={onMap} selectedId={selected?.cluster_id ?? null} onSelect={toggleSelect} />
+          </div>
+          <p className="clustermap__note">
+            {selected
+              ? `Selected ${selected.lat.toFixed(5)}, ${selected.lon.toFixed(5)} — severity ${selected.severity.toFixed(0)} of 100, found by ${selected.devices} device${selected.devices === 1 ? '' : 's'}.`
+              : 'Select a row or a pin to tie the two together. Circle size is severity; the dashed ring is how far apart that location’s own detections were. Positions sit on a coordinate grid — there is no street basemap yet.'}
+          </p>
+        </figure>
+      )}
     </section>
   )
 }
