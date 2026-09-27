@@ -1,9 +1,9 @@
 import Brand from './Brand.jsx'
 
-export default function Footer({ wide = false }) {
+export default function Footer() {
   return (
     <footer className="footer">
-      <div className={`wrap${wide ? ' wrap--wide' : ''} footer__inner`}>
+      <div className="wrap footer__inner">
         <Brand />
         <p>A prototype for recording potholes in Chicago from ordinary phones.</p>
       </div>

@@ -287,9 +287,9 @@ export default function Forecast() {
   return (
     <>
       <a href="#main" className="skip-link">Skip to content</a>
-      <Nav wide />
+      <Nav />
       <main id="main" className="fcast">
-        <div className="wrap wrap--wide">
+        <div className="wrap">
           <div className="fcast__top">
             <div className="fcast__title">
               <Link to="/admin" className="login__back">
