@@ -253,6 +253,8 @@ function createSim() {
       pitchRate: 0,
       rollRate: 0,
       wheelInHole: 0,
+      pass: 0,
+      passSimTime: 0,
     },
     bodyAccel: 0, // m/s^2, body heave acceleration from the last step
     tireForce: new Float64Array(4),
@@ -721,7 +723,7 @@ function formatHud(sim, pitch, roll, loopTime) {
   ].join('\n')
 }
 
-function Simulation({ hudRef, onTelemetry }) {
+function Simulation({ hudRef, onTelemetry, playing }) {
   const simRef = useRef(null)
   const { geometries, materials } = useResources()
   const bodyRef = useRef(null)
@@ -735,7 +737,8 @@ function Simulation({ hudRef, onTelemetry }) {
     const sim = simRef.current
 
     // 1. Advance physics in fixed steps until it catches up with the timeline.
-    sim.realTime += Math.min(delta, CONFIG.sim.maxFrameDelta)
+    // While paused the clock stands still, so the physics takes no steps and the car holds its pose.
+    if (playing) sim.realTime += Math.min(delta, CONFIG.sim.maxFrameDelta)
     const target = simTimeAt(sim.realTime)
     while ((sim.steps + 1) * DT <= target) stepPhysics(sim)
 
@@ -795,6 +798,8 @@ function Simulation({ hudRef, onTelemetry }) {
       telemetry.pitchRate = sim.curr[PITCH_V] // rad/s
       telemetry.rollRate = sim.curr[ROLL_V] // rad/s
       telemetry.wheelInHole = sim.inPothole[0] + sim.inPothole[1] + sim.inPothole[2] + sim.inPothole[3]
+      telemetry.pass = Math.floor(sim.realTime / LOOP) // which trip past the pothole this is
+      telemetry.passSimTime = simTimeInLoop(telemetry.loopTime) // simulation s since this pass began
       onTelemetry(telemetry)
     }
 
@@ -841,11 +846,13 @@ const HUD_STYLE = {
  *
  * @param {object} props
  * @param {boolean} [props.showHud=false] shows suspension compression, pitch, roll and speed
+ * @param {boolean} [props.playing=true] false freezes the clock, so nothing moves until it is true again
  * @param {(telemetry: object) => void} [props.onTelemetry] called every frame with a reused object
- *   holding loopTime, timeScale, speed, verticalAccel, pitchRate, rollRate and wheelInHole.
+ *   holding loopTime, timeScale, speed, verticalAccel, pitchRate, rollRate, wheelInHole,
+ *   pass (loops completed) and passSimTime (simulation seconds into the current loop).
  *   Copy what you need and do not keep the object's values in React state per frame.
  */
-export default function CityBlockScene({ showHud = false, onTelemetry }) {
+export default function CityBlockScene({ showHud = false, playing = true, onTelemetry }) {
   const hudRef = useRef(null)
   return (
     <div
@@ -863,7 +870,7 @@ export default function CityBlockScene({ showHud = false, onTelemetry }) {
         <fog attach="fog" args={[COLORS.sky, ...LAYOUT.fog]} />
         <ambientLight intensity={1.3} />
         <directionalLight position={[-30, 50, 25]} intensity={1.8} />
-        <Simulation hudRef={hudRef} onTelemetry={onTelemetry} />
+        <Simulation hudRef={hudRef} onTelemetry={onTelemetry} playing={playing} />
       </Canvas>
       {showHud && <pre ref={hudRef} style={HUD_STYLE} />}
     </div>

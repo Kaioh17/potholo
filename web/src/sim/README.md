@@ -19,7 +19,25 @@ import CityBlockScene from '../sim/CityBlockScene.jsx'
 ```
 
 `onTelemetry` is optional.
-It is called every frame with a reused object of phone-like readings, so keep it cheap and do not put the values in React state per frame.
+It is called every frame with a reused object, so keep it cheap and do not put the values in React state per frame.
+It carries `pass` (loops completed) and `passSimTime` (simulation seconds into the current loop) on top of the suspension readings.
+
+`playing` is optional and defaults to true.
+While it is false the clock stands still and the car holds its pose, and the `/demo` page starts that way behind a Play button.
+
+## Feeding the API
+
+The `/demo` page turns this clock into real uploads.
+`web/src/demo/phoneBody.js` builds `POST /v1/batches` bodies from `web/src/demo/tripTemplate.json`, a recorded pass of the car over the pothole, and adds a small random variation to every value so no two uploads match.
+`web/src/demo/useDemoPhone.js` posts each body as soon as it is complete.
+The trace comes from `mock/demo_trace.py`.
+Regenerate it whenever the timeline below changes, because the strike has to land when the front wheel drops in:
+
+```bash
+python mock/demo_trace.py --pass-seconds 26.22 --front-hit 12.45
+```
+
+Both numbers are simulation time, not the real-time `CONFIG` values: one loop is 26.22 s of simulation time, and the front axle is over the pothole at 12.45 s.
 
 ## How it works
 

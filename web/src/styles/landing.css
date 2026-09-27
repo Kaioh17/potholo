@@ -122,7 +122,7 @@
 
 .section--tint {
   background: var(--surface-alt);
-  border-block: 1px solid var(--border);
+  border-top: 1px solid var(--border);
 }
 
 .section__head {
@@ -455,6 +455,8 @@
 }
 
 .demo__grid {
+  /* A fixed height, so the layout does not grow or shrink with what the recording shows. */
+  height: 900px;
   display: grid;
   grid-template-columns: minmax(0, 7fr) minmax(300px, 3fr);
   gap: 32px;
@@ -464,15 +466,32 @@
 .demo__stage {
   display: flex;
   flex-direction: column;
+  min-height: 0;
 }
 
 .demo__canvas {
   flex: 1;
-  min-height: 460px;
+  min-height: 0;
   background: var(--canvas);
 }
 
+.demo__controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.demo__status {
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
 .recording {
+  min-height: 0;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -480,6 +499,10 @@
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-card);
+}
+
+.recording > * {
+  flex-shrink: 0; /* scroll instead of squashing sections when the card is short */
 }
 
 .recording__head {
@@ -517,6 +540,94 @@
 .recording__row dd {
   margin: 0;
   text-align: right;
+}
+
+.glossary {
+  border-top: 1px solid var(--border);
+}
+
+.glossary__toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  padding: 12px 0;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font: 500 0.9375rem/1.35 var(--font-body);
+  text-align: left;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.glossary__toggle svg {
+  flex: none;
+}
+
+.glossary-dialog {
+  width: min(560px, calc(100vw - 32px));
+  max-height: min(680px, calc(100vh - 48px));
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.glossary-dialog::backdrop {
+  background: rgba(17, 17, 17, 0.4);
+}
+
+.glossary-dialog__card {
+  padding: 20px 24px 12px;
+}
+
+.glossary-dialog__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.glossary-dialog__head h2 {
+  font: 500 1.125rem/1.3 var(--font-body);
+  letter-spacing: 0;
+}
+
+.glossary-dialog__close {
+  display: inline-flex;
+  padding: 6px;
+  border: 0;
+  border-radius: var(--radius-btn);
+  background: none;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.glossary-dialog__close:hover {
+  background: #efeeea;
+}
+
+.glossary__list {
+  margin: 0;
+}
+
+.glossary__item {
+  padding-block: 10px;
+  border-top: 1px solid var(--border);
+}
+
+.glossary__item dt {
+  font: 500 0.8125rem/1.4 var(--font-mono);
+}
+
+.glossary__item dd {
+  margin: 2px 0 0;
+  color: var(--muted);
+  font-size: 0.875rem;
 }
 
 .recording__eyebrow {
@@ -560,6 +671,31 @@
   font-size: 0.75rem;
 }
 
+.recording__mono {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  overflow-wrap: anywhere;
+}
+
+.recording__error {
+  color: var(--red-ink);
+  font-size: 0.8125rem;
+}
+
+.recording__body {
+  margin: 0;
+  padding: 12px 14px;
+  height: 176px;
+  flex: none;
+  overflow: auto;
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-btn);
+  font: 0.75rem/1.5 var(--font-mono);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
 .recording__note {
   margin-top: auto;
   color: var(--muted);
@@ -568,9 +704,11 @@
 
 @media (max-width: 1000px) {
   .demo__grid {
+    height: auto;
     grid-template-columns: minmax(0, 1fr);
   }
   .demo__canvas {
-    min-height: 340px;
+    flex: none;
+    height: 340px;
   }
 }
