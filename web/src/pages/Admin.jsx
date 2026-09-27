@@ -7,6 +7,7 @@ import {
   CaretLeft,
   CaretRight,
   CaretUp,
+  ChatCircleText,
   MagnifyingGlass,
   Pause,
   Play,
@@ -49,6 +50,63 @@ function timeAgo(iso, now) {
 }
 
 const number = (value) => value.toLocaleString('en-US')
+
+/* -------------------------------- AI summary -------------------------------- */
+
+// Read on demand, not polled: a Claude call is a real request, and the fleet
+// numbers it summarises only move once every few seconds anyway.
+function FleetSummary() {
+  const [state, setState] = useState({ status: 'idle' })
+
+  const load = async () => {
+    setState({ status: 'loading' })
+    try {
+      const response = await fetch(`${API_URL}/v1/fleet/summary`)
+      if (!response.ok) throw new Error(`/v1/fleet/summary returned ${response.status}`)
+      const result = await response.json()
+      setState({ status: 'done', overview: result.overview, sections: result.sections })
+    } catch (error) {
+      setState({ status: 'error', message: error.message })
+    }
+  }
+
+  return (
+    <section className="panel admin__summary" aria-label="Fleet AI summary">
+      <div className="panel__head">
+        <h2>What the fleet found</h2>
+        <button
+          type="button"
+          className="btn btn--ghost btn--sm"
+          onClick={load}
+          disabled={state.status === 'loading'}
+        >
+          <ChatCircleText size={16} weight="bold" aria-hidden="true" />
+          {state.status === 'loading' ? 'Reading the fleet...' : 'Get AI summary'}
+        </button>
+      </div>
+      {state.status === 'done' && (
+        <div className="admin__summary-body">
+          <p className="admin__summary-overview">{state.overview}</p>
+          {state.sections.length > 0 && (
+            <dl className="admin__summary-sections">
+              {state.sections.map((section) => (
+                <div key={section.key} className="admin__summary-section">
+                  <dt>{section.title}</dt>
+                  <dd>{section.body}</dd>
+                </div>
+              ))}
+            </dl>
+          )}
+        </div>
+      )}
+      {state.status === 'error' && (
+        <p className="field__error" role="alert">
+          {state.message}
+        </p>
+      )}
+    </section>
+  )
+}
 
 /* ------------------------------ Summary tiles ------------------------------ */
 
@@ -391,7 +449,7 @@ function ClusterList({ clusters, now }) {
       </div>
 
       <div className="table-scroll">
-        <table className="table">
+        <table className="table table--clickable-rows">
           <thead>
             <tr>
               {CLUSTER_COLUMNS.map((c) => (
@@ -410,9 +468,14 @@ function ClusterList({ clusters, now }) {
               const confidence = confidenceStatus(c.confidence)
               const isSelected = c.cluster_id === selected?.cluster_id
               return (
-                <tr key={c.cluster_id} className={isSelected ? 'is-selected' : ''}>
+                <tr
+                  key={c.cluster_id}
+                  className={isSelected ? 'is-selected' : ''}
+                  aria-selected={isSelected}
+                  onClick={() => toggleSelect(c.cluster_id)}
+                >
                   <td className="mono">
-                    <button type="button" className="cell-button" aria-pressed={isSelected} onClick={() => toggleSelect(c.cluster_id)}>
+                    <button type="button" className="cell-button" aria-pressed={isSelected}>
                       {c.lat.toFixed(5)}, {c.lon.toFixed(5)}
                     </button>
                   </td>
@@ -502,7 +565,7 @@ export default function Admin() {
   return (
     <div className="admin">
       <header className="admin__bar">
-        <div className="wrap wrap--wide admin__bar-inner">
+        <div className="wrap admin__bar-inner">
           <div className="admin__title">
             <Brand />
             <span className="tag tag--amber">Admin</span>
@@ -522,7 +585,7 @@ export default function Admin() {
         </div>
       </header>
 
-      <main className="wrap wrap--wide admin__main">
+      <main className="wrap admin__main">
         <div className="admin__links">
           <Link to="/" className="login__back">
             <ArrowLeft size={16} weight="bold" aria-hidden="true" />
@@ -560,6 +623,7 @@ export default function Admin() {
         {!unreachable && devices.length > 0 && (
           <>
             <Summary devices={devices} clusters={clusters} health={withHealth.map((d) => d.health)} filter={filter} setFilter={setFilter} />
+            <FleetSummary />
             <DeviceTable devices={withHealth} filter={filter} setFilter={setFilter} now={now} />
             <ClusterList clusters={clusters} now={now} />
           </>

@@ -96,6 +96,7 @@ export default function ClusterMap({ clusters, selectedId, onSelect }) {
   const readyRef = useRef(false)
   const markersRef = useRef([])
   const fittedRef = useRef('')
+  const pannedToRef = useRef(null)
   const latest = useRef({ clusters, selectedId, onSelect })
 
   const draw = () => {
@@ -133,6 +134,19 @@ export default function ClusterMap({ clusters, selectedId, onSelect }) {
       const bounds = new maplibregl.LngLatBounds()
       order.forEach((c) => bounds.extend([c.lon, c.lat]))
       map.fitBounds(bounds, { padding: 64, maxZoom: 17, animate: false })
+    }
+
+    // A fresh selection whose pin the viewer can't currently see -- off to the
+    // side of a panned map, or outside a tight zoomed-in view -- is brought
+    // into frame at whatever zoom the viewer already chose. Keyed to the
+    // selection itself, not the data poll, so it fires once per pick and never
+    // fights a manual pan away from an already-selected pin.
+    if (selectedId !== pannedToRef.current) {
+      pannedToRef.current = selectedId
+      const target = selectedId && order.find((c) => c.cluster_id === selectedId)
+      if (target && !map.getBounds().contains([target.lon, target.lat])) {
+        map.easeTo({ center: [target.lon, target.lat], duration: 400 })
+      }
     }
   }
 
@@ -173,6 +187,7 @@ export default function ClusterMap({ clusters, selectedId, onSelect }) {
     return () => {
       markersRef.current = []
       readyRef.current = false
+      pannedToRef.current = null
       fittedRef.current = ''
       map.remove()
       mapRef.current = null

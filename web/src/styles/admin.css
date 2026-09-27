@@ -41,6 +41,55 @@
   padding-block: 24px 112px;
 }
 
+.admin__summary {
+  display: grid;
+  gap: 12px;
+}
+
+.admin__summary-body,
+.admin__summary > .field__error {
+  padding: 0 24px 20px;
+}
+
+.admin__summary-body {
+  display: grid;
+  gap: 16px;
+}
+
+.admin__summary-overview {
+  color: var(--ink-soft);
+  line-height: 1.6;
+}
+
+.admin__summary-sections {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  margin: 0;
+}
+
+.admin__summary-section {
+  padding: 12px 14px;
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+}
+
+.admin__summary-section dt {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.admin__summary-section dd {
+  margin: 0;
+  color: var(--ink-soft);
+  line-height: 1.6;
+}
+
 .admin__head h1 {
   font-size: clamp(1.75rem, 3vw, 2.25rem);
   letter-spacing: -0.03em;
@@ -333,6 +382,10 @@
 
 .table tbody tr:not(.detail-row):hover {
   background: var(--surface-alt);
+}
+
+.table--clickable-rows tbody tr:not(.detail-row) {
+  cursor: pointer;
 }
 
 .table tbody tr:last-child {
