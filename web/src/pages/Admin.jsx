@@ -154,10 +154,18 @@ const FILTERS = [
   { id: 'attention', label: 'Needs attention', test: (d) => d.health.rank > 0 },
 ]
 
+const DEVICE_PAGE_SIZE = 6
+
 function DeviceTable({ devices, filter, setFilter, now }) {
   const [query, setQuery] = useState('')
   const [sort, setSort] = useState({ key: 'last_seen', dir: 'desc' })
   const [open, setOpen] = useState(() => new Set())
+  // The filter can also be changed from the summary tile, so the page is
+  // remembered with the filter it was chosen under and falls back to the first
+  // page when that filter is no longer the active one.
+  const [paging, setPaging] = useState({ page: 1, filter })
+  const page = paging.filter === filter ? paging.page : 1
+  const setPage = (next) => setPaging({ page: next, filter })
 
   const rows = useMemo(() => {
     const column = COLUMNS.find((c) => c.key === sort.key)
@@ -171,7 +179,17 @@ function DeviceTable({ devices, filter, setFilter, now }) {
     })
   }, [devices, filter, query, sort])
 
-  const toggleSort = (key) => setSort((s) => (s.key === key ? { key, dir: s.dir === 'asc' ? 'desc' : 'asc' } : { key, dir: 'desc' }))
+  // Clamped so a poll that drops the last row of the final page slides back a
+  // page instead of showing a blank table.
+  const pageCount = Math.max(1, Math.ceil(rows.length / DEVICE_PAGE_SIZE))
+  const current = Math.min(page, pageCount)
+  const from = (current - 1) * DEVICE_PAGE_SIZE
+  const pageRows = rows.slice(from, from + DEVICE_PAGE_SIZE)
+
+  const toggleSort = (key) => {
+    setSort((s) => (s.key === key ? { key, dir: s.dir === 'asc' ? 'desc' : 'asc' } : { key, dir: 'desc' }))
+    setPage(1)
+  }
   const toggleOpen = (id) =>
     setOpen((prev) => {
       const next = new Set(prev)
@@ -185,7 +203,7 @@ function DeviceTable({ devices, filter, setFilter, now }) {
         <h2 id="devices-title">Devices</h2>
         <label className="search">
           <MagnifyingGlass size={16} weight="bold" aria-hidden="true" />
-          <input type="search" placeholder="Search device" value={query} onChange={(e) => setQuery(e.target.value)} aria-label="Search devices" />
+          <input type="search" placeholder="Search device" value={query} onChange={(e) => { setQuery(e.target.value); setPage(1) }} aria-label="Search devices" />
         </label>
       </div>
 
@@ -213,7 +231,7 @@ function DeviceTable({ devices, filter, setFilter, now }) {
             </tr>
           </thead>
           <tbody>
-            {rows.map((d) => {
+            {pageRows.map((d) => {
               const isOpen = open.has(d.device_id)
               return (
                 <Fragment key={d.device_id}>
@@ -244,6 +262,21 @@ function DeviceTable({ devices, filter, setFilter, now }) {
         </table>
         {rows.length === 0 && <p className="empty">No devices match.</p>}
       </div>
+
+      {rows.length > 0 && (
+        <nav className="pager" aria-label="Device pages">
+          <button type="button" className="pager__step" onClick={() => setPage(current - 1)} disabled={current === 1} aria-label="Previous six devices">
+            <CaretLeft size={14} weight="bold" aria-hidden="true" />
+          </button>
+          <p className="pager__status" aria-live="polite">
+            {from + 1}-{Math.min(from + DEVICE_PAGE_SIZE, rows.length)} of {rows.length}
+            <span className="pager__page"> &middot; page {current} of {pageCount}</span>
+          </p>
+          <button type="button" className="pager__step" onClick={() => setPage(current + 1)} disabled={current === pageCount} aria-label="Next six devices">
+            <CaretRight size={14} weight="bold" aria-hidden="true" />
+          </button>
+        </nav>
+      )}
     </section>
   )
 }
@@ -290,7 +323,6 @@ function ClusterList({ clusters, now }) {
   // Worst first: on an operations dashboard the severe holes are the point.
   const [sort, setSort] = useState({ key: 'severity', dir: 'desc' })
   const [page, setPage] = useState(1)
-  const [showAllOnMap, setShowAllOnMap] = useState(false)
 
   // The filtered, ranked list the table pages through and the map draws from,
   // so the chips and the column sort govern both at once and the two can never
@@ -312,13 +344,19 @@ function ClusterList({ clusters, now }) {
   const from = (current - 1) * CLUSTER_PAGE_SIZE
   const rows = useMemo(() => sorted.slice(from, from + CLUSTER_PAGE_SIZE), [sorted, from])
 
-  const onMap = showAllOnMap ? sorted : rows
-
-  // A selection that the filter, the sort or a page turn has moved out of view
-  // is dropped rather than kept invisibly, so the highlighted row and the
-  // ringed pin always agree. Derived during render, not synced in an effect.
-  const selected = onMap.find((c) => c.cluster_id === selectedId) ?? null
-  const toggleSelect = (id) => setSelectedId((prev) => (prev === id ? null : id))
+  // The map always draws every location the filter lets through, whatever page
+  // the table is on.
+  // A selection that the filter has removed is dropped rather than kept
+  // invisibly, so the highlighted row and the ringed pin always agree. Derived
+  // during render, not synced in an effect.
+  const selected = sorted.find((c) => c.cluster_id === selectedId) ?? null
+  // Picking a pin on another page turns the table to that row's page, so the
+  // selection is never highlighted somewhere the table is not showing.
+  const toggleSelect = (id) => {
+    setSelectedId((prev) => (prev === id ? null : id))
+    const index = sorted.findIndex((c) => c.cluster_id === id)
+    if (index >= 0) setPage(Math.floor(index / CLUSTER_PAGE_SIZE) + 1)
+  }
 
   // Re-ranking moves every row, so the page number stops meaning anything.
   const toggleSort = (key) => {
@@ -423,27 +461,20 @@ function ClusterList({ clusters, now }) {
         </nav>
       )}
 
-      {onMap.length > 0 && (
+      {sorted.length > 0 && (
         <figure className="clustermap">
           <figcaption className="clustermap__head">
             <span className="th-label">
-              {showAllOnMap
-                ? `Map of all ${sorted.length} location${sorted.length === 1 ? '' : 's'}`
-                : `Map of the ${rows.length} location${rows.length === 1 ? '' : 's'} on this page`}
+              {`Map of all ${sorted.length} location${sorted.length === 1 ? '' : 's'}`}
             </span>
             <span className="clustermap__keys">
               {CLUSTER_KEYS.map(([status, label]) => (
                 <Pill key={status} tone={clusterStatus(status).tone}>{label}</Pill>
               ))}
-              {sorted.length > rows.length && (
-                <button type="button" className="chip" aria-pressed={showAllOnMap} onClick={() => setShowAllOnMap((v) => !v)}>
-                  {showAllOnMap ? 'This page only' : `All ${sorted.length}`}
-                </button>
-              )}
             </span>
           </figcaption>
           <div className="clustermap__canvas">
-            <ClusterMap clusters={onMap} selectedId={selected?.cluster_id ?? null} onSelect={toggleSelect} />
+            <ClusterMap clusters={sorted} selectedId={selected?.cluster_id ?? null} onSelect={toggleSelect} />
           </div>
           <p className="clustermap__note">
             {selected
