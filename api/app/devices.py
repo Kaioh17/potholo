@@ -18,7 +18,7 @@ from sqlalchemy.orm import Session
 
 from app.models.detection import PotholeCluster, PotholeDetection
 from app.models.device import Device
-from app.schemas import BatchResult, SensorBatch
+from app.schemas import BatchResult, DeviceOut, SensorBatch
 
 ACTIVE_WITHIN = timedelta(minutes=5)
 IDLE_WITHIN = timedelta(hours=1)
@@ -71,8 +71,9 @@ class DeviceRow:
     mean_gps_error_m: float | None
 
 
-def device_rows(session: Session) -> list[DeviceRow]:
-    """Every device, most recently seen first, with totals over what it found."""
+def device_rows(session: Session, device_id: str | None = None) -> list[DeviceRow]:
+    """Every device (or just `device_id`), most recently seen first, with totals
+    over what it found."""
     found = (
         select(
             PotholeDetection.device_id,
@@ -111,6 +112,8 @@ def device_rows(session: Session) -> list[DeviceRow]:
         .outerjoin(confirmed, confirmed.c.device_id == Device.device_id)
         .order_by(Device.updated_at.desc())
     )
+    if device_id is not None:
+        stmt = stmt.where(Device.device_id == device_id)
     return [
         DeviceRow(
             device=row[0],
@@ -124,3 +127,29 @@ def device_rows(session: Session) -> list[DeviceRow]:
         )
         for row in session.execute(stmt)
     ]
+
+
+def _round(value: float | None, digits: int) -> float | None:
+    return None if value is None else round(value, digits)
+
+
+def device_out(row: DeviceRow) -> DeviceOut:
+    return DeviceOut(
+        device_id=row.device.device_id,
+        activity=activity(row.device.updated_at),
+        first_seen=as_utc(row.device.created_at),
+        last_seen=as_utc(row.device.updated_at),
+        last_trip_id=row.device.last_trip_id,
+        batches=row.device.batch_count,
+        samples=row.device.sample_count,
+        sample_rate_hz=row.device.sample_rate_hz,
+        warnings=row.device.warning_count,
+        gps_fixes=row.device.gps_fix_count,
+        detections=row.detections,
+        clusters=row.clusters,
+        confirmed_clusters=row.confirmed_clusters,
+        mean_severity=_round(row.mean_severity, 1),
+        max_severity=_round(row.max_severity, 1),
+        mean_confidence=_round(row.mean_confidence, 3),
+        mean_gps_error_m=_round(row.mean_gps_error_m, 1),
+    )

@@ -13,6 +13,9 @@ The maths is documented in `../docs/detection-model.md`.
 | --- | --- |
 | `GET /health` | liveness, including a database round trip |
 | `POST /v1/batches` | ingest a few seconds of a trip, return what was found in it |
+| `GET /v1/phones` | the phone models a demo user can pick from |
+| `POST /v1/users/join` | join the demo with a name (4+ characters, unique) and a phone; returns the user and a generated device id |
+| `GET /v1/users/{id}` | a user, with the upload health and detections of their phone |
 | `GET /v1/devices` | every phone that has uploaded, with its upload health and what it found |
 | `GET /v1/clusters` | cross-checked pothole locations, best evidence first |
 | `POST /v1/clusters/{id}/report` | prepare a CDOT Open311 request for a confirmed cluster |

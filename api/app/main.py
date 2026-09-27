@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import engine
 from app.models import Base
-from app.routers import detections, health
+from app.routers import detections, health, users
 from app.schema import check_schema
 
 
@@ -32,3 +32,4 @@ app.add_middleware(
 
 app.include_router(health.router)
 app.include_router(detections.router)
+app.include_router(users.router)

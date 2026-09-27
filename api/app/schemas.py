@@ -17,6 +17,8 @@ from typing import Literal
 
 from pydantic import BaseModel, Field, field_validator
 
+from app.phones import find_phone
+
 
 class ImuSample(BaseModel):
     """One accelerometer + gyroscope reading."""
@@ -129,3 +131,54 @@ class DeviceOut(BaseModel):
     max_severity: float | None = None
     mean_confidence: float | None = None
     mean_gps_error_m: float | None = None
+
+
+MIN_NAME_LENGTH = 4
+MAX_NAME_LENGTH = 40
+
+
+class JoinRequest(BaseModel):
+    """What someone gives to join the demo: a name and the phone they will use."""
+
+    name: str
+    phone: str = Field(..., description="`slug` of a model from GET /v1/phones")
+
+    @field_validator("name")
+    @classmethod
+    def _name(cls, v: str) -> str:
+        v = " ".join(v.split())
+        if len(v) < MIN_NAME_LENGTH:
+            raise ValueError(
+                f"Name must be longer than {MIN_NAME_LENGTH - 1} characters."
+            )
+        if len(v) > MAX_NAME_LENGTH:
+            raise ValueError(f"Name must be at most {MAX_NAME_LENGTH} characters.")
+        return v
+
+    @field_validator("phone")
+    @classmethod
+    def _phone(cls, v: str) -> str:
+        if find_phone(v) is None:
+            raise ValueError("Pick a phone from the list.")
+        return v
+
+
+class PhoneOut(BaseModel):
+    slug: str
+    label: str
+
+
+class UserOut(BaseModel):
+    user_id: str
+    name: str
+    phone: PhoneOut
+    device_id: str
+    joined: datetime
+
+
+class UserView(UserOut):
+    """A user and what their phone has uploaded and found so far."""
+
+    device: DeviceOut | None = Field(
+        None, description="Null until the phone has uploaded its first batch."
+    )
