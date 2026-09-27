@@ -458,6 +458,13 @@
   margin-top: 2px;
 }
 
+.admin__links {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
 /* Pager ---------------------------------------------------------------- */
 
 /* Sits between the table and the map, so a page turn visibly moves both. */

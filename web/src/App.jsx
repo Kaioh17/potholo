@@ -7,6 +7,7 @@ import Login from './pages/Login.jsx'
 const Demo = lazy(() => import('./pages/Demo.jsx'))
 const MapPage = lazy(() => import('./pages/Map.jsx'))
 const Admin = lazy(() => import('./pages/Admin.jsx'))
+const Forecast = lazy(() => import('./pages/Forecast.jsx'))
 
 function ScrollToTop() {
   const { pathname, hash } = useLocation()
@@ -46,6 +47,14 @@ export default function App() {
           element={
             <Suspense fallback={null}>
               <Admin />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/forecast"
+          element={
+            <Suspense fallback={null}>
+              <Forecast />
             </Suspense>
           }
         />

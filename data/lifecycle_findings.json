@@ -1,0 +1,113 @@
+{
+  "generated": "2026-09-26",
+  "source": "Chicago 311 pothole requests 2011-2018, Open-Meteo ERA5, Chicago ADT counts",
+  "q1_seasonality": {
+    "monthly_index": {
+      "Jan": 1.295,
+      "Feb": 1.722,
+      "Mar": 1.963,
+      "Apr": 1.637,
+      "May": 1.166,
+      "Jun": 0.931,
+      "Jul": 0.725,
+      "Aug": 0.603,
+      "Sep": 0.513,
+      "Oct": 0.503,
+      "Nov": 0.405,
+      "Dec": 0.559
+    },
+    "peak_month": "Mar",
+    "trough_month": "Nov",
+    "peak_trough_ratio": 4.846913580246913,
+    "spring_share_mean": 0.4327002719834675,
+    "spring_share_sd": 0.031050584225171405,
+    "annual_totals": {
+      "2011": 62742,
+      "2012": 38685,
+      "2013": 52653,
+      "2014": 70405,
+      "2015": 47849,
+      "2016": 37990,
+      "2017": 42040,
+      "2018": 42872
+    },
+    "annual_swing": 1.8532508554882865
+  },
+  "q2_weather": {
+    "lag_correlations": {
+      "0": 0.3265217421180409,
+      "1": 0.5286575326609567,
+      "2": 0.5500904728215549,
+      "3": 0.4675277336461878,
+      "4": 0.19230214843738885
+    },
+    "best_lag_months": 2,
+    "best_lag_r": 0.5500904728215549,
+    "wet_gated_r": 0.5695108111146162,
+    "winter_only_r": -0.256113292917028,
+    "season_level_r": -0.3593506663149466,
+    "season_n": 7
+  },
+  "q3_lifecycle": {
+    "n_completed": 391534,
+    "days_to_fill": {
+      "p10": 0.0,
+      "p25": 1.0,
+      "p50": 6.0,
+      "p75": 22.0,
+      "p90": 60.0,
+      "p99": 160.0
+    },
+    "days_to_fill_mean": 19.940416413389386,
+    "median_by_month": {
+      "Jan": 1.0,
+      "Feb": 2.0,
+      "Mar": 5.0,
+      "Apr": 7.0,
+      "May": 15.0,
+      "Jun": 18.0,
+      "Jul": 17.0,
+      "Aug": 15.0,
+      "Sep": 17.0,
+      "Oct": 13.0,
+      "Nov": 7.0,
+      "Dec": 2.0
+    },
+    "holes_per_block_median": 7.0,
+    "holes_per_block_mean": 13.807643589499413,
+    "holes_per_block_p90": 33.0
+  },
+  "q4_traffic": {
+    "n_counters": 1277,
+    "r_raw": 0.02812202988952012,
+    "r_loglog": 0.04708708978690336,
+    "quintiles": {
+      "lowest": {
+        "volume": 7100.0,
+        "potholes": 158.0,
+        "n": 259
+      },
+      "low": {
+        "volume": 12500.0,
+        "potholes": 168.0,
+        "n": 254
+      },
+      "mid": {
+        "volume": 17300.0,
+        "potholes": 175.0,
+        "n": 253
+      },
+      "high": {
+        "volume": 22700.0,
+        "potholes": 178.0,
+        "n": 256
+      },
+      "highest": {
+        "volume": 34400.0,
+        "potholes": 192.0,
+        "n": 255
+      }
+    },
+    "top_bottom_lift": 1.2151898734177216
+  }
+}

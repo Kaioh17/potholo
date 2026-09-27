@@ -8,6 +8,7 @@ import './styles/landing.css'
 import './styles/login.css'
 import './styles/map.css'
 import './styles/admin.css'
+import './styles/forecast.css'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

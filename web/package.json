@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "verify:forecast": "node src/forecast/verify.mjs"
   },
   "dependencies": {
     "@phosphor-icons/react": "^2.1.10",

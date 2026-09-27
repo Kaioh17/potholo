@@ -1,0 +1,406 @@
+/* Forecast page ---------------------------------------------------------- */
+
+.fcast {
+  padding: 40px 0 80px;
+}
+
+.fcast__head {
+  max-width: 62ch;
+  margin: 24px 0 24px;
+}
+
+.fcast__head h1 {
+  margin: 8px 0 12px;
+  font-size: clamp(1.75rem, 3.6vw, 2.5rem);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+.fcast__lede {
+  margin: 0;
+  color: var(--ink-soft);
+  line-height: 1.6;
+}
+
+.banner--info {
+  background: var(--amber-pale);
+  border-color: #f0e2b6;
+  color: var(--amber-ink);
+  margin-bottom: 24px;
+}
+
+.banner--info p {
+  margin: 0;
+  line-height: 1.55;
+  font-size: 0.9375rem;
+}
+
+/* Transport and scrubber ------------------------------------------------- */
+
+.fcast__controls {
+  display: grid;
+  gap: 12px;
+  padding: 16px 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+}
+
+.fcast__transport {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.fcast__stamp {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 0 auto;
+  font-variant-numeric: tabular-nums;
+}
+
+.fcast__stamp strong {
+  font: 700 1.0625rem var(--font-mono);
+}
+
+/* The slider is the primary control, so it gets a visible track and a large
+   grab target rather than the browser default. */
+.fcast__slider input {
+  width: 100%;
+  margin: 0;
+  accent-color: var(--amber);
+  cursor: pointer;
+}
+
+.fcast__stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  margin: 16px 0;
+  padding: 0;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+}
+
+.fcast__stats > div {
+  padding: 14px 16px;
+  background: var(--surface);
+}
+
+.fcast__stats dt {
+  color: var(--muted);
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.fcast__stats dd {
+  margin: 4px 0 0;
+  font: 700 1.5rem var(--font-body);
+  font-variant-numeric: tabular-nums;
+}
+
+.fcast__lift {
+  color: var(--amber-ink);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+/* Timeline --------------------------------------------------------------- */
+
+.ftl {
+  margin: 0 0 16px;
+  padding: 16px 20px 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+}
+
+.ftl__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.ftl__keys {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.ftl__key {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+.ftl__key::before {
+  content: '';
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+}
+
+.ftl__key--severe::before { background: var(--red-ink); }
+.ftl__key--moderate::before { background: var(--amber); }
+.ftl__key--minor::before { background: #dedcd6; }
+
+.ftl__svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.ftl__area--severe { fill: var(--red-ink); opacity: 0.85; }
+.ftl__area--moderate { fill: var(--amber); opacity: 0.85; }
+.ftl__area--minor { fill: #dedcd6; opacity: 0.85; }
+
+/* Everything past today is model output. The wash says so without a caption. */
+.ftl__future {
+  fill: var(--canvas);
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+.ftl__now {
+  stroke: var(--ink);
+  stroke-width: 1.5;
+  stroke-dasharray: 3 3;
+}
+
+.ftl__nowlabel {
+  fill: var(--ink);
+  font: 600 11px var(--font-mono);
+}
+
+.ftl__cursor {
+  stroke: var(--amber-ink);
+  stroke-width: 2;
+}
+
+.ftl__year {
+  fill: var(--muted);
+  font: 500 11px var(--font-mono);
+  text-anchor: middle;
+}
+
+.ftl__hit {
+  fill: transparent;
+  cursor: ew-resize;
+}
+
+/* Map -------------------------------------------------------------------- */
+
+.fcast__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 20px;
+  align-items: start;
+}
+
+.fcast__stage {
+  overflow: hidden;
+}
+
+.fcast__canvas {
+  padding: 12px;
+  background: var(--surface);
+}
+
+.fmap {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+
+.fmap__bg { fill: var(--surface-alt); }
+
+.fmap__pin { cursor: pointer; }
+
+.fmap__dot {
+  stroke-width: 1;
+  /* Severity changes every scrubber step, so the radius is animated to make
+     growth legible as movement rather than as a flicker. */
+  transition: r 260ms var(--ease), fill 260ms var(--ease);
+}
+
+.fmap__pin--minor .fmap__dot { fill: #d9d7d1; stroke: #b4b2ac; }
+.fmap__pin--moderate .fmap__dot { fill: var(--amber); stroke: var(--amber-ink); }
+.fmap__pin--severe .fmap__dot { fill: var(--red-ink); stroke: #7d1f1d; }
+
+/* The upper end of the band: how bad this could be at the fast rate. */
+.fmap__band {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+  opacity: 0.45;
+  transition: r 260ms var(--ease);
+}
+
+.fmap__ring {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 2;
+}
+
+.fmap__pin:focus-visible { outline: none; }
+.fmap__pin:focus-visible .fmap__dot { stroke: var(--ink); stroke-width: 2.5; }
+
+.fmap__scale line { stroke: var(--ink-soft); stroke-width: 1.5; }
+.fmap__scale text { fill: var(--muted); font: 500 11px var(--font-mono); }
+
+.fcast__legend {
+  margin: 0;
+  padding: 12px 16px;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+/* Detail ----------------------------------------------------------------- */
+
+.fdetail {
+  padding: 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+}
+
+.fdetail--empty {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  padding: 40px 20px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.fdetail__coords {
+  margin: 0;
+  font: 500 0.8125rem var(--font-mono);
+  color: var(--muted);
+}
+
+.fdetail__now {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 6px 0 14px;
+}
+
+.fdetail__now strong {
+  font-size: 2.25rem;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.fdetail__now span {
+  color: var(--muted);
+  font-size: 0.8125rem;
+}
+
+.fdetail__spark {
+  width: 100%;
+  height: auto;
+  background: var(--surface-alt);
+  border-radius: 6px;
+}
+
+.fdetail__band { fill: var(--amber); opacity: 0.22; }
+.fdetail__line { fill: none; stroke: var(--amber-ink); stroke-width: 2; }
+.fdetail__threshold {
+  stroke: var(--red-ink);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+  opacity: 0.6;
+}
+
+.fdetail__axis {
+  display: flex;
+  justify-content: space-between;
+  margin: 6px 0 14px;
+  color: var(--muted);
+  font-size: 0.6875rem;
+}
+
+.fdetail__rows {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  font-size: 0.875rem;
+}
+
+.fdetail__rows > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.fdetail__rows dt { color: var(--muted); }
+.fdetail__rows dd { margin: 0; font-weight: 600; text-align: right; }
+
+.fdetail__note {
+  margin: 14px 0 0;
+  color: var(--muted);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+/* Caveats ---------------------------------------------------------------- */
+
+.fcast__caveats {
+  margin-top: 28px;
+  padding: 24px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+}
+
+.fcast__caveats h2 {
+  margin: 0 0 14px;
+  font-size: 1.125rem;
+}
+
+.fcast__caveats ul {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding-left: 20px;
+  max-width: 78ch;
+}
+
+.fcast__caveats li {
+  color: var(--ink-soft);
+  font-size: 0.9375rem;
+  line-height: 1.6;
+}
+
+@media (max-width: 1000px) {
+  .fcast__grid { grid-template-columns: minmax(0, 1fr); }
+  .fcast__stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 560px) {
+  .fcast__stats { grid-template-columns: minmax(0, 1fr); }
+  .fcast__stamp { margin-left: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fmap__dot,
+  .fmap__band {
+    transition: none;
+  }
+}
