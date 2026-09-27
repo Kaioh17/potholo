@@ -1,0 +1,1077 @@
+/* Forecast page ---------------------------------------------------------- */
+
+.fcast {
+  padding: 14px 0 28px;
+}
+
+/* The page is meant to be read without scrolling: the timeline, the drivers and
+   the map all describe the same instant, and a reader who has to scroll between
+   them loses the connection. Everything below is sized to that. */
+.fcast__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin: 4px 0 10px;
+}
+
+.fcast__title h1 {
+  margin: 4px 0 0;
+  font-size: clamp(1.125rem, 1.8vw, 1.4rem);
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+}
+
+/* The provenance note matters but does not need to shout on every visit. */
+.fcast__note {
+  max-width: 44ch;
+  font-size: 0.8125rem;
+}
+
+.fcast__note summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  background: var(--amber-pale);
+  border: 1px solid #f0e2b6;
+  border-radius: 9999px;
+  color: var(--amber-ink);
+  cursor: pointer;
+  list-style: none;
+}
+
+.fcast__note summary::-webkit-details-marker { display: none; }
+
+.fcast__note p {
+  margin: 8px 0 0;
+  color: var(--ink-soft);
+  line-height: 1.55;
+}
+
+.banner--info {
+  background: var(--amber-pale);
+  border-color: #f0e2b6;
+  color: var(--amber-ink);
+  margin-bottom: 24px;
+}
+
+.banner--info p {
+  margin: 0;
+  line-height: 1.55;
+  font-size: 0.9375rem;
+}
+
+/* Transport and scrubber ------------------------------------------------- */
+
+.fcast__controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+}
+
+.fcast__transport {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: none;
+}
+
+.fcast__stamp {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.fcast__stamp strong {
+  font: 700 1.0625rem var(--font-mono);
+}
+
+/* The slider is the primary control, so it gets a visible track and a large
+   grab target rather than the browser default. */
+.fcast__slider { flex: 1; display: block; }
+
+.fcast__slider input {
+  width: 100%;
+  display: block;
+  margin: 0;
+  accent-color: var(--amber);
+  cursor: pointer;
+}
+
+.fcast__stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  margin: 8px 0;
+  padding: 0;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+}
+
+.fcast__stats > div {
+  padding: 7px 12px;
+  background: var(--surface);
+}
+
+.fcast__stats dt {
+  color: var(--muted);
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.fcast__stats dd {
+  margin: 2px 0 0;
+  font: 700 1.25rem var(--font-body);
+  font-variant-numeric: tabular-nums;
+}
+
+.fcast__lift {
+  color: var(--amber-ink);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+/* Timeline --------------------------------------------------------------- */
+
+.ftl {
+  margin: 0 0 12px;
+  padding: 12px 16px 4px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+}
+
+.ftl__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.ftl__keys {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.ftl__key {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+.ftl__key::before {
+  content: '';
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+}
+
+.ftl__key--severe::before { background: var(--red-ink); }
+.ftl__key--moderate::before { background: var(--amber); }
+.ftl__key--minor::before { background: #dedcd6; }
+
+.ftl__svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.ftl__area--severe { fill: var(--red-ink); opacity: 0.85; }
+.ftl__area--moderate { fill: var(--amber); opacity: 0.85; }
+.ftl__area--minor { fill: #dedcd6; opacity: 0.85; }
+
+/* Everything past today is model output. The wash says so without a caption. */
+.ftl__future {
+  fill: var(--canvas);
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+.ftl__now {
+  stroke: var(--ink);
+  stroke-width: 3;
+  stroke-dasharray: 7 7;
+}
+
+.ftl__nowlabel {
+  fill: var(--ink);
+  font: 600 24px var(--font-mono);
+}
+
+.ftl__cursor {
+  stroke: var(--amber-ink);
+  stroke-width: 4;
+}
+
+.ftl__year {
+  fill: var(--muted);
+  font: 500 24px var(--font-mono);
+  text-anchor: middle;
+}
+
+.ftl__hit {
+  fill: transparent;
+  cursor: ew-resize;
+}
+
+/* Map -------------------------------------------------------------------- */
+
+.fcast__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+
+.fcast__side {
+  display: grid;
+  gap: 12px;
+}
+
+.fcast__stage {
+  overflow: hidden;
+}
+
+.fcast__canvas {
+  padding: 8px;
+  background: var(--surface);
+}
+
+.fmap {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+
+.fmap__bg { fill: var(--surface-alt); }
+
+.fmap__pin { cursor: pointer; }
+
+.fmap__dot {
+  stroke-width: 1;
+  /* Severity changes every scrubber step, so the radius is animated to make
+     growth legible as movement rather than as a flicker. */
+  transition: r 260ms var(--ease), fill 260ms var(--ease);
+}
+
+.fmap__pin--minor .fmap__dot { fill: #d9d7d1; stroke: #b4b2ac; }
+.fmap__pin--moderate .fmap__dot { fill: var(--amber); stroke: var(--amber-ink); }
+.fmap__pin--severe .fmap__dot { fill: var(--red-ink); stroke: #7d1f1d; }
+
+/* The upper end of the band: how bad this could be at the fast rate. */
+.fmap__band {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+  opacity: 0.45;
+  transition: r 260ms var(--ease);
+}
+
+.fmap__ring {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 2;
+}
+
+.fmap__pin:focus-visible { outline: none; }
+.fmap__pin:focus-visible .fmap__dot { stroke: var(--ink); stroke-width: 2.5; }
+
+.fmap__scale line { stroke: var(--ink-soft); stroke-width: 1.5; }
+.fmap__scale text { fill: var(--muted); font: 500 11px var(--font-mono); }
+
+.fcast__legend {
+  margin: 0;
+  padding: 8px 12px;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+/* Detail ----------------------------------------------------------------- */
+
+.fdetail {
+  padding: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+}
+
+.fdetail--empty {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  padding: 20px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.fdetail__coords {
+  margin: 0;
+  font: 500 0.8125rem var(--font-mono);
+  color: var(--muted);
+}
+
+.fdetail__now {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 6px 0 14px;
+}
+
+.fdetail__now strong {
+  font-size: 1.75rem;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.fdetail__now span {
+  color: var(--muted);
+  font-size: 0.8125rem;
+}
+
+.fdetail__spark {
+  width: 100%;
+  height: auto;
+  background: var(--surface-alt);
+  border-radius: 6px;
+}
+
+.fdetail__band { fill: var(--amber); opacity: 0.22; }
+.fdetail__line { fill: none; stroke: var(--amber-ink); stroke-width: 2; }
+.fdetail__threshold {
+  stroke: var(--red-ink);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+  opacity: 0.6;
+}
+
+.fdetail__axis {
+  display: flex;
+  justify-content: space-between;
+  margin: 6px 0 14px;
+  color: var(--muted);
+  font-size: 0.6875rem;
+}
+
+.fdetail__rows {
+  display: grid;
+  gap: 5px;
+  margin: 0;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  font-size: 0.875rem;
+}
+
+.fdetail__rows > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.fdetail__rows dt { color: var(--muted); }
+.fdetail__rows dd { margin: 0; font-weight: 600; text-align: right; }
+
+.fdetail__note {
+  margin: 14px 0 0;
+  color: var(--muted);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+/* Caveats ---------------------------------------------------------------- */
+
+.fcast__caveats {
+  margin-top: 12px;
+  padding: 12px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+}
+
+.fcast__caveats summary {
+  font-weight: 700;
+  font-size: 0.9375rem;
+  cursor: pointer;
+}
+
+.fcast__caveats[open] summary { margin-bottom: 12px; }
+
+.fcast__caveats ul {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding-left: 20px;
+  max-width: 78ch;
+}
+
+.fcast__caveats li {
+  color: var(--ink-soft);
+  font-size: 0.9375rem;
+  line-height: 1.6;
+}
+
+@media (max-width: 1000px) {
+  .fcast__grid { grid-template-columns: minmax(0, 1fr); }
+  .fcast__stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 560px) {
+  .fcast__stats { grid-template-columns: minmax(0, 1fr); }
+  .fcast__stamp { margin-left: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fmap__dot,
+  .fmap__band {
+    transition: none;
+  }
+}
+
+/* Weather ---------------------------------------------------------------- */
+
+/* The canvas becomes the positioning context for the falling particles, and
+   clips them so nothing escapes over the page. */
+.fcast__canvas {
+  position: relative;
+  overflow: hidden;
+}
+
+.wx {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+.wx__bit {
+  position: absolute;
+  top: -8%;
+  display: block;
+  animation-name: wx-fall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  /* No will-change: a transform animation is composited on its own, and hinting
+     it on every one of ~90 particles would ask for 90 layers and the memory to
+     back them. */
+}
+
+/* Rain: thin, fast, almost vertical. */
+.wx--rain .wx__bit {
+  width: 1.5px;
+  height: 15px;
+  border-radius: 1px;
+  background: linear-gradient(to bottom, rgba(95, 128, 150, 0), rgba(72, 108, 133, 0.9));
+}
+
+/* Snow: round, slow, drifting sideways as it falls. */
+/* White on a near-white map needs help: the ring is what makes a flake read
+   as a flake rather than as a gap in the texture. */
+.wx--snow .wx__bit {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 0 0 1.25px rgba(86, 116, 138, 0.55), 0 1px 2px rgba(31, 60, 80, 0.18);
+}
+
+@keyframes wx-fall {
+  from {
+    transform: translate3d(0, 0, 0) scale(var(--scale, 1));
+  }
+  to {
+    transform: translate3d(var(--drift, 0px), 115vh, 0) scale(var(--scale, 1));
+  }
+}
+
+/* A month that crosses zero gets a cold cast over the map, so the damaging
+   months are distinguishable from the merely wet ones at a glance. */
+.wx--freezing::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(141, 182, 210, 0.3), rgba(141, 182, 210, 0.06));
+  pointer-events: none;
+}
+
+/* Conditions ------------------------------------------------------------- */
+
+.cond {
+  margin: 0;
+  padding: 10px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+}
+
+.cond__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.cond__when {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.cond__month {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.cond__year {
+  margin: 0;
+  color: var(--muted);
+  font: 500 1.0625rem var(--font-mono);
+}
+
+.cond__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.cond__stat {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 6px 9px;
+  background: var(--surface);
+}
+
+/* Amber marks the months that actually drive the model; grey marks the ones
+   that look like weather but do nothing. */
+.cond__stat--active { background: var(--amber-pale); }
+.cond__stat--idle { background: var(--surface-alt); }
+
+.cond__icon {
+  display: flex;
+  flex: none;
+  margin-top: 2px;
+  color: var(--muted);
+}
+
+.cond__stat--active .cond__icon { color: var(--amber-ink); }
+
+.cond__body {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.cond__label {
+  color: var(--muted);
+  font-size: 0.6875rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.cond__value {
+  font: 700 1rem var(--font-body);
+  font-variant-numeric: tabular-nums;
+}
+
+.cond__sub {
+  color: var(--muted);
+  font-size: 0.6875rem;
+  line-height: 1.3;
+}
+
+.cond__chain {
+  margin: 8px 0 0;
+  color: var(--ink-soft);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+/* Freeze-thaw track on the timeline -------------------------------------- */
+
+.ftl__ft {
+  fill: var(--blue-ink);
+  opacity: 0.75;
+}
+
+/* Hollow bars past today: a typical winter, not a predicted one. */
+.ftl__ft--normal {
+  fill: none;
+  stroke: var(--blue-ink);
+  stroke-width: 1;
+  opacity: 0.5;
+}
+
+.ftl__key--ft::before { background: var(--blue-ink); }
+
+@media (max-width: 860px) {
+  .cond__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 460px) {
+  .cond__grid { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* Falling weather is decoration over data; anyone who has asked for less
+   motion gets the cold cast and the numbers, without the particles. */
+@media (prefers-reduced-motion: reduce) {
+  .wx__bit { display: none; }
+}
+
+/* Street basemap --------------------------------------------------------- */
+
+/* Real Chicago centrelines. Drawn as four stroke weights by street class so
+   the arterials read as arterials and the map is legible as a place rather
+   than as a mesh -- at this zoom every line the same width is unreadable. */
+
+.fmap__street {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.fmap__street--c4 { stroke: #d6d3ca; }
+.fmap__street--c3 { stroke: #c6c2b7; }
+.fmap__street--c2 { stroke: #b2ada0; }
+.fmap__street--c1 { stroke: #a09a8c; }
+
+.fmap__landmark-box {
+  fill: var(--surface);
+  stroke: var(--ink);
+  stroke-width: 1.5;
+}
+
+.fmap__landmark {
+  fill: var(--ink);
+  font: 600 11px var(--font-mono);
+  paint-order: stroke;
+  stroke: var(--surface-alt);
+  stroke-width: 3;
+}
+
+.fmap--compact .fmap__landmark { font-size: 13px; }
+
+/* Window chrome ---------------------------------------------------------- */
+
+.window__bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.window__dots {
+  display: inline-flex;
+  gap: 5px;
+}
+
+.window__title {
+  color: var(--muted);
+  font: 500 0.75rem var(--font-mono);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.window__expand {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: auto;
+  padding: 3px 9px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-btn);
+  background: var(--surface);
+  color: var(--ink-soft);
+  font: 600 0.75rem var(--font-body);
+  cursor: pointer;
+}
+
+.window__expand:hover {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+/* Expanded window -------------------------------------------------------- */
+
+.fexp {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+/* A button rather than a div, so the scrim is reachable and announced rather
+   than being an invisible click target only a mouse can find. */
+.fexp__scrim {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  padding: 0;
+  background: rgba(17, 17, 17, 0.45);
+  cursor: pointer;
+}
+
+.fexp__sheet {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: min(1500px, 100%);
+  max-height: calc(100vh - 48px);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+}
+
+.fexp__bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-alt);
+}
+
+.fexp__title {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-right: auto;
+  font: 600 0.875rem var(--font-body);
+}
+
+.fexp__when {
+  color: var(--muted);
+  font: 500 0.8125rem var(--font-mono);
+}
+
+.fexp__close {
+  display: inline-flex;
+  padding: 5px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-btn);
+  background: var(--surface);
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+
+.fexp__close:hover { border-color: var(--ink); color: var(--ink); }
+
+.fexp__body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 330px;
+  gap: 14px;
+  padding: 14px;
+  overflow: auto;
+}
+
+.fexp__side {
+  display: grid;
+  gap: 12px;
+  align-content: start;
+}
+
+/* Inside the expanded window the controls are already on a panel, so they drop
+   their own border rather than stacking two. */
+.fexp__side .fcast__controls {
+  padding: 0;
+  border: 0;
+  background: none;
+}
+
+@media (max-width: 1100px) {
+  .fexp__body { grid-template-columns: minmax(0, 1fr); }
+  .fcast__grid { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* Method ----------------------------------------------------------------- */
+
+.method {
+  margin-top: 12px;
+  padding: 12px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+}
+
+.method > summary {
+  font-weight: 700;
+  font-size: 0.9375rem;
+  cursor: pointer;
+}
+
+.method[open] {
+  padding: 20px 24px;
+}
+
+.method[open] > summary {
+  margin-bottom: 10px;
+  font-size: 1.125rem;
+  letter-spacing: -0.01em;
+}
+
+.method__lede {
+  margin: 0 0 20px;
+  max-width: 76ch;
+  color: var(--ink-soft);
+  line-height: 1.6;
+}
+
+.method__sub {
+  margin: 24px 0 10px;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.method p {
+  max-width: 76ch;
+  line-height: 1.6;
+  color: var(--ink-soft);
+}
+
+.method code {
+  padding: 1px 5px;
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font: 500 0.875em var(--font-mono);
+}
+
+/* Sources ---------------------------------------------------------------- */
+
+.method__sources {
+  display: grid;
+  gap: 1px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.method__sources li {
+  display: grid;
+  grid-template-columns: minmax(200px, 1fr) minmax(0, 2fr) minmax(180px, 1fr);
+  gap: 14px;
+  align-items: baseline;
+  padding: 10px 14px;
+  background: var(--surface);
+  font-size: 0.875rem;
+}
+
+.method__sources a {
+  font-weight: 600;
+  color: var(--ink);
+  text-decoration: none;
+  border-bottom: 1px solid var(--amber);
+}
+
+.method__sources a:hover { border-bottom-color: var(--ink); }
+
+.method__detail { color: var(--ink-soft); }
+.method__gives { color: var(--muted); font-size: 0.8125rem; }
+
+.method__note {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+/* The formula gets room to breathe: it is the definition of the scale every
+   other number on the page is quoted in. */
+.method__eq {
+  margin: 10px 0;
+  padding: 10px 14px;
+  background: var(--surface-alt);
+  border-left: 2px solid var(--amber);
+  border-radius: 4px;
+  font: 500 1rem var(--font-mono);
+  color: var(--ink);
+}
+
+/* Numbered derivation ---------------------------------------------------- */
+
+.method__steps {
+  display: grid;
+  gap: 18px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: none;
+}
+
+.method__step {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+
+.method__n {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--surface);
+  font: 700 0.8125rem var(--font-mono);
+}
+
+.method__step h3 {
+  margin: 3px 0 6px;
+  font-size: 0.9375rem;
+}
+
+.method__step p { margin: 0 0 8px; font-size: 0.9375rem; }
+.method__step p:last-child { margin-bottom: 0; }
+
+.method__math {
+  margin: 8px 0;
+  padding: 12px 14px;
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font: 500 0.8125rem/1.7 var(--font-mono);
+  color: var(--ink);
+  overflow-x: auto;
+}
+
+/* The single assumption in the chain is marked, not buried. */
+.method__assumed {
+  padding: 10px 12px;
+  background: var(--amber-pale);
+  border: 1px solid #f0e2b6;
+  border-radius: 6px;
+  color: var(--amber-ink) !important;
+  font-size: 0.875rem !important;
+}
+
+.method__check {
+  padding: 10px 12px;
+  background: var(--green-pale);
+  border: 1px solid #d5e3d3;
+  border-radius: 6px;
+  color: var(--green-ink) !important;
+  font-size: 0.875rem !important;
+}
+
+.method__alts {
+  display: grid;
+  gap: 4px;
+  margin: 6px 0 10px;
+  padding: 0;
+  list-style: none;
+}
+
+.method__alts li {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  font-size: 0.875rem;
+}
+
+.method__alts span { color: var(--muted); }
+
+.method__tells {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding-left: 20px;
+  max-width: 76ch;
+}
+
+.method__tells li {
+  color: var(--ink-soft);
+  font-size: 0.9375rem;
+  line-height: 1.6;
+}
+
+@media (max-width: 860px) {
+  .method__sources li { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+  .method { padding: 16px; }
+}
+
+/* OpenStreetMap tiles ---------------------------------------------------- */
+
+/* Standard OSM styling is considerably more colourful than the rest of this
+   site. Desaturating it pulls the basemap back towards the warm monochrome the
+   design uses, and keeps the pins and the radar as the subject -- the map is
+   context, not content. Street labels stay perfectly legible. */
+.fmap__tiles image {
+  opacity: 0.9;
+  filter: saturate(0.3) contrast(0.92) brightness(1.04);
+}
+
+.fmap__credit {
+  fill: var(--muted);
+  font: 500 8px var(--font-body);
+  text-anchor: end;
+  paint-order: stroke;
+  stroke: rgba(255, 255, 255, 0.85);
+  stroke-width: 2.5;
+}
+
+/* Over real tiles the bare scale bar and label lose contrast, so both sit on
+   a plate. */
+.fmap__scale-bg {
+  fill: rgba(255, 255, 255, 0.82);
+}
+
+.fmap__landmark-box {
+  fill: var(--surface);
+  stroke: var(--ink);
+  stroke-width: 1.5;
+}
+
+/* Radar ------------------------------------------------------------------ */
+
+/* The one place on the site that leaves the monochrome palette: a radar that
+   is not radar-coloured stops reading as a radar. Multiply keeps the street
+   grid legible straight through the precipitation, the way a TV radar keeps
+   its county lines. Saturation is pushed back up because the basemap beneath
+   it has been desaturated, and without this the cells sink into the map. */
+.radar {
+  pointer-events: none;
+  mix-blend-mode: multiply;
+  filter: saturate(1.35);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .radar {
+    /* The cells still show where the weather is; they simply stop sweeping. */
+    opacity: 0.8;
+  }
+}

@@ -10,6 +10,7 @@ import {
   MagnifyingGlass,
   Pause,
   Play,
+  TrendUp,
   WarningCircle,
   X,
 } from '@phosphor-icons/react'
@@ -522,10 +523,16 @@ export default function Admin() {
       </header>
 
       <main className="wrap wrap--wide admin__main">
-        <Link to="/" className="login__back">
-          <ArrowLeft size={16} weight="bold" aria-hidden="true" />
-          Back to site
-        </Link>
+        <div className="admin__links">
+          <Link to="/" className="login__back">
+            <ArrowLeft size={16} weight="bold" aria-hidden="true" />
+            Back to site
+          </Link>
+          <Link to="/forecast" className="login__back">
+            <TrendUp size={16} weight="bold" aria-hidden="true" />
+            Forecast: if nobody fills them
+          </Link>
+        </div>
         <div className="admin__head">
           <h1>Fleet dashboard</h1>
           <p>Every device that has uploaded to the API, and the potholes they have found. Refreshes every 5 seconds.</p>

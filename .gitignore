@@ -15,3 +15,6 @@ __pycache__/
 
 # Claude Code local settings (launch.json is shared)
 .claude/settings.local.json
+
+# Cached public datasets for the forecasting research (re-downloadable)
+data/analysis/cache/
