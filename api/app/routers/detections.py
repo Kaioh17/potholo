@@ -17,11 +17,11 @@ from pydantic import BaseModel
 from app.database import SessionDep
 from app.detection import severity as sev
 from app.detection.locate import metres_between
-from app.devices import activity, as_utc, device_rows, record_device
+from app.devices import activity, as_utc, device_rows
 from app.models.detection import PotholeCluster
 from app.pipeline import process_batch
 from app.reporting import chicago311
-from app.repository import add_detection, list_clusters, record_passes
+from app.repository import list_clusters, store_batch
 from app.schemas import BatchResult, ClusterOut, DeviceOut, SensorBatch
 
 router = APIRouter(prefix="/v1", tags=["detection"])
@@ -65,12 +65,7 @@ def ingest(
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
 
-    # Passes first: a trip that drove past an existing cluster without hitting
-    # anything is evidence too, and it has to land before the hit rate is read.
-    record_passes(session, batch.trip_id, batch.gps)
-    for det in result.detections:
-        add_detection(session, det)
-    record_device(session, batch, result)
+    store_batch(session, batch, result)
     session.commit()
     return result
 

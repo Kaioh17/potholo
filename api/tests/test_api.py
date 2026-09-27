@@ -187,3 +187,24 @@ def test_devices_lists_every_uploader_with_what_it_found(client):
     assert quiet["detections"] == 0
     assert quiet["mean_severity"] is None
     assert quiet["activity"] == "active"
+
+
+def test_store_batch_records_the_device_as_the_route_does(client):
+    """The seed script persists through store_batch, so it must record devices."""
+    from sqlalchemy import select
+
+    from app.database import SessionLocal
+    from app.models.device import Device
+    from app.pipeline import process_batch
+    from app.repository import store_batch
+    from app.schemas import SensorBatch
+
+    batch = SensorBatch(**payload("stored-directly", "trip-stored", lat=LAT + 0.016))
+    with SessionLocal() as session:
+        store_batch(session, batch, process_batch(batch))
+        session.commit()
+        device = session.scalar(
+            select(Device).where(Device.device_id == "stored-directly")
+        )
+        assert device is not None
+        assert device.batch_count == 1

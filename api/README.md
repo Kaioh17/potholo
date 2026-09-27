@@ -74,6 +74,10 @@ fastapi dev
 
 The API runs at http://127.0.0.1:8000, and the interactive docs are at `/docs`.
 Tables are created on startup, and there are no migrations yet.
+Creating tables never alters one that already exists, so a database made before a model changed keeps its old columns.
+The API checks for this at startup and refuses to start, naming the missing table or column.
+Fix it with `python mock/seed_db.py --reset`, which drops and recreates every table and reseeds.
+The development database only holds generated data, so this is safe.
 
 ## Configuration
 
@@ -81,7 +85,7 @@ Settings come from environment variables with the `POTHOLO_` prefix.
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
-| `POTHOLO_DATABASE_URL` | `sqlite:///./potholo.db` | Database connection URL |
+| `POTHOLO_DATABASE_URL` | `sqlite:///<repo>/api/potholo.db` | Database connection URL. The default is anchored to `api/`, so it does not depend on the directory you run from. |
 
 ## Checks
 
