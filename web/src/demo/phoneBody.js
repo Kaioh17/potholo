@@ -36,6 +36,8 @@ const randomId = (prefix) => `${prefix}-${Math.random().toString(16).slice(2, 10
 
 export const SAMPLE_RATE_HZ = fs
 export const PASS_SECONDS = template.passSeconds
+// Simulation seconds into the recording where the strike is baked into the rows.
+export const FRONT_HIT_SIM_TIME = template.frontHitAt
 
 function makeSample(index, gain) {
   const [ax, ay, az, gx, gy, gz] = rows[index]
@@ -51,9 +53,11 @@ function makeSample(index, gain) {
 }
 
 // The car drives at a constant speed along the street, so distance is speed times trip time.
-function makeFix(second) {
+// `tripSpeed` defaults to the recording's own speed, but a scenario may drive faster or slower:
+// only the GPS fixes reflect that (distance and reported speed), never the recorded IMU rows.
+function makeFix(second, tripSpeed) {
   const heading = (START.heading * Math.PI) / 180
-  const distance = speed * second
+  const distance = tripSpeed * second
   const north = distance * Math.cos(heading) + between(-SPREAD.position, SPREAD.position)
   const east = distance * Math.sin(heading) + between(-SPREAD.position, SPREAD.position)
   const metresPerDegLon = METRES_PER_DEG_LAT * Math.cos((START.lat * Math.PI) / 180)
@@ -61,7 +65,7 @@ function makeFix(second) {
     t: second,
     lat: round(START.lat + north / METRES_PER_DEG_LAT, 6),
     lon: round(START.lon + east / metresPerDegLon, 6),
-    speed: round(Math.max(0, around(speed, SPREAD.speed)), 2),
+    speed: round(Math.max(0, around(tripSpeed, SPREAD.speed)), 2),
     accuracy: round(between(...ACCURACY_RANGE), 1),
     heading: START.heading,
   }
@@ -75,6 +79,10 @@ function makeFix(second) {
  * timestamps start at zero.  A batch is three seconds of samples plus the GPS fixes on the whole
  * seconds around it, and is only released once the sim clock has reached its last fix, so the body
  * never contains a reading from the future.
+ *
+ * `advance`'s `tripSpeed` overrides the recording's own speed for the GPS fixes only (see
+ * `makeFix`), so a faster or slower scenario is reflected in distance and reported speed, not the
+ * recorded IMU rows. It can change between calls without losing the in-progress trip.
  */
 export function createPhone(givenDeviceId) {
   const deviceId = givenDeviceId ?? randomId('demo')
@@ -94,9 +102,10 @@ export function createPhone(givenDeviceId) {
   /**
    * @param {number} pass which pass of the pothole the sim is on
    * @param {number} passTime simulation seconds since this pass began
+   * @param {number} [tripSpeed] m/s reported in this pass's GPS fixes; defaults to the recording's own speed
    * @returns {{ batches: object[], sample: object|null }} bodies ready to POST, and the newest sample
    */
-  function advance(pass, passTime) {
+  function advance(pass, passTime, tripSpeed = speed) {
     // The tail of an unfinished pass is dropped: it would be a second trip of under a batch.
     if (!trip || trip.pass !== pass) trip = startTrip(pass)
 
@@ -110,7 +119,7 @@ export function createPhone(givenDeviceId) {
       const startSecond = trip.sent / fs
       const endSecond = startSecond + BATCH_SECONDS
       const gps = []
-      for (let second = startSecond; second <= endSecond; second += 1) gps.push(makeFix(second))
+      for (let second = startSecond; second <= endSecond; second += 1) gps.push(makeFix(second, tripSpeed))
       batches.push({
         device_id: deviceId,
         trip_id: trip.id,

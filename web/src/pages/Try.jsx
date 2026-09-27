@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowLeft, DeviceMobile, SignOut } from '@phosphor-icons/react'
+import { ArrowLeft, ChatCircleText, DeviceMobile, Eye, Info, SignOut } from '@phosphor-icons/react'
 import Nav from '../components/Nav.jsx'
 import Footer from '../components/Footer.jsx'
 import { API_URL } from '../admin/useFleet.js'
@@ -232,6 +232,59 @@ function YourPhone({ user, onLeave }) {
   )
 }
 
+// Read on demand, not polled: a Claude call is a real request, and the
+// numbers it summarises only move once every few seconds anyway.
+function Summary({ userId }) {
+  const [state, setState] = useState({ status: 'idle' })
+
+  const load = async () => {
+    setState({ status: 'loading' })
+    try {
+      const result = await request(`/v1/users/${userId}/summary`)
+      setState({ status: 'done', overview: result.overview, sections: result.sections })
+    } catch (error) {
+      setState({ status: 'error', message: error.message })
+    }
+  }
+
+  return (
+    <section className="try__summary" aria-label="Your pothole summary">
+      <div className="try__summary-head">
+        <h2>What your drive found</h2>
+        <button
+          type="button"
+          className="btn btn--ghost btn--sm"
+          onClick={load}
+          disabled={state.status === 'loading'}
+        >
+          <ChatCircleText size={16} weight="bold" aria-hidden="true" />
+          {state.status === 'loading' ? 'Reading your data...' : 'Get my summary'}
+        </button>
+      </div>
+      {state.status === 'done' && (
+        <div className="try__summary-body">
+          <p className="try__summary-text">{state.overview}</p>
+          {state.sections.length > 0 && (
+            <dl className="try__summary-sections">
+              {state.sections.map((section) => (
+                <div key={section.key} className="try__summary-section">
+                  <dt>{section.title}</dt>
+                  <dd>{section.body}</dd>
+                </div>
+              ))}
+            </dl>
+          )}
+        </div>
+      )}
+      {state.status === 'error' && (
+        <p className="field__error" role="alert">
+          {state.message}
+        </p>
+      )}
+    </section>
+  )
+}
+
 export default function Try() {
   // `undefined` while the remembered user is looked up, `null` when there is none.
   const [user, setUser] = useState(() => (remembered() ? undefined : null))
@@ -271,13 +324,25 @@ export default function Try() {
       <a href="#main" className="skip-link">
         Skip to content
       </a>
-      <Nav wide />
+      <Nav />
       <main id="main" className="demo">
-        <div className="wrap wrap--wide">
-          <Link to="/" className="login__back demo__back">
-            <ArrowLeft size={16} weight="bold" aria-hidden="true" />
-            Back to site
-          </Link>
+        <div className="wrap">
+          <div className="demo__top demo__back">
+            <Link to="/" className="login__back">
+              <ArrowLeft size={16} weight="bold" aria-hidden="true" />
+              Back to site
+            </Link>
+            <Link to="/admin" className="btn btn--ghost btn--sm">
+              <Eye size={16} weight="bold" aria-hidden="true" />
+              See what admin sees
+            </Link>
+          </div>
+
+          <p className="notice">
+            <Info size={18} weight="bold" aria-hidden="true" />
+            This is a prototype. The phone below is simulated, not your real device, and readings are demo data
+            only.
+          </p>
 
           {user === undefined ? null : user === null ? (
             <JoinForm onJoined={joined} />
@@ -292,12 +357,13 @@ export default function Try() {
                 </p>
               </header>
               <YourPhone user={user} onLeave={leave} />
-              <DemoPlayer key={user.device_id} deviceId={user.device_id} />
+              <Summary userId={user.user_id} />
+              <DemoPlayer key={user.device_id} deviceId={user.device_id} tunable />
             </>
           )}
         </div>
       </main>
-      <Footer wide />
+      <Footer />
     </>
   )
 }

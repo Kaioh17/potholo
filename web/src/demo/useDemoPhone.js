@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { API_URL } from '../admin/useFleet.js'
-import { createPhone, previewBody, SAMPLE_RATE_HZ } from './phoneBody.js'
+import { createPhone, previewBody, SAMPLE_RATE_HZ, FRONT_HIT_SIM_TIME, PASS_SECONDS } from './phoneBody.js'
 
 const DETECTION_HOLD_MS = 4000
 
@@ -24,8 +24,21 @@ async function postBatch(body) {
  * on a timer, not rendered per frame.  `upload` is React state that changes once per batch, and `recentDetection` is true for a few
  * seconds after the API reports a pothole.  `deviceId` is fixed when the hook first runs, so give a
  * different one a new mount (a `key`).
+ *
+ * `speed` and `driveTime` should match whatever was passed to `CityBlockScene`. The scene's own
+ * `telemetry.passSimTime` is its *visual* sim-time clock, which moves with `driveTime` - the
+ * recorded trace's strike is baked at a fixed sim-time (`FRONT_HIT_SIM_TIME`) regardless, so this
+ * hook keeps its own clock (`phoneTimeAt`) that always lands the recording's strike at the real
+ * moment `driveTime` names, however that moment maps to the scene's own sim time.
  */
-export function useDemoPhone(playing, deviceId) {
+function phoneTimeAt(telemetry, driveTime) {
+  const { loopTime, loopDuration } = telemetry
+  if (loopTime <= driveTime) return loopTime * (FRONT_HIT_SIM_TIME / driveTime)
+  const tail = (PASS_SECONDS - FRONT_HIT_SIM_TIME) / (loopDuration - driveTime)
+  return FRONT_HIT_SIM_TIME + (loopTime - driveTime) * tail
+}
+
+export function useDemoPhone(playing, deviceId, { speed = 8, driveTime = 5 } = {}) {
   const [phone] = useState(() => createPhone(deviceId))
   const playingRef = useRef(playing)
   const liveRef = useRef({ sample: null, tripId: null })
@@ -67,12 +80,12 @@ export function useDemoPhone(playing, deviceId) {
   const onTelemetry = useCallback(
     (telemetry) => {
       if (!playingRef.current) return
-      const { batches, sample, tripId } = phone.advance(telemetry.pass, telemetry.passSimTime)
+      const { batches, sample, tripId } = phone.advance(telemetry.pass, phoneTimeAt(telemetry, driveTime), speed)
       liveRef.current.sample = sample ?? liveRef.current.sample
       liveRef.current.tripId = tripId
       for (const body of batches) send(body)
     },
-    [phone, send],
+    [phone, send, speed, driveTime],
   )
 
   return { deviceId: phone.deviceId, sampleRate: SAMPLE_RATE_HZ, liveRef, upload, recentDetection, onTelemetry }

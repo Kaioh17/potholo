@@ -1,7 +1,7 @@
 /**
  * CityBlockScene
  *
- * A low-detail city block with a car that hits a pothole once every 30 second loop.
+ * A low-detail city block with a car that hits a pothole once per loop.
  * The suspension is simulated by hand: four independent quarter-car models
  * (sprung body corner, spring-damper, unsprung wheel, tire spring) feeding one
  * rigid body with heave, pitch and roll.
@@ -11,6 +11,11 @@
  *
  * Per-frame values live in refs and plain objects. Nothing in the render loop
  * touches React state or allocates.
+ *
+ * `speed` and `driveTime` (real seconds until the front axle is over the
+ * pothole) are props, not fixed constants: every value derived from them
+ * (the slow-motion window, loop length, and where the pothole sits on the
+ * road) is rebuilt per (speed, driveTime) pair by `buildTimeline` below.
  */
 import { RoundedBox } from '@react-three/drei'
 import { Canvas, useFrame } from '@react-three/fiber'
@@ -23,23 +28,12 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 /* -------------------------------------------------------------------------- */
 
 const CONFIG = {
-  timeline: {
-    loopDuration: 30, // s of real time before the sequence repeats
-    frontHitAt: 12.8, // s of real time when the front axle is over the pothole centre
-  },
-  slowMotion: {
-    start: 12, // s, slow motion starts easing in here
-    end: 18, // s, slow motion has fully eased out by here
-    timeScale: 0.3, // simulation speed inside the window (1 = real time)
-    ramp: 0.6, // s, length of the ease in and ease out
-  },
   sim: {
     fixedStep: 1 / 120, // s, physics timestep
     maxFrameDelta: 0.1, // s, longest frame we try to catch up on (tab switches, hitches)
   },
   gravity: 9.81, // m/s^2, only matters for when a tire leaves the road
   car: {
-    speed: 8, // m/s
     mass: 1200, // kg, sprung mass (body)
     pitchInertia: 1900, // kg m^2, resistance to nose up / nose down
     rollInertia: 480, // kg m^2, resistance to side tilt
@@ -81,6 +75,21 @@ const CONFIG = {
 }
 
 /* -------------------------------------------------------------------------- */
+/* Timeline shape: how `speed` and `driveTime` become a slow-motion window     */
+/* and a loop length. The offsets below translate the hand-tuned feel of the   */
+/* scene's original fixed timeline (slow motion 12-18s around a 12.8s hit,     */
+/* 30s loop) so it holds at any driveTime: same lead-in, trail-out and         */
+/* post-hit settle time, just centred on wherever the hit now falls.           */
+/* -------------------------------------------------------------------------- */
+
+const HIT_LEAD = 0.8 // s before the hit that slow motion starts easing in
+const HIT_TRAIL = 5.2 // s after the hit that slow motion has fully eased out
+const SLOWMO_RAMP = 0.6 // s, length of the ease in and ease out
+const SLOWMO_SCALE = 0.3 // simulation speed inside the window (1 = real time)
+const LOOP_TAIL = 17.2 // s after the slow-motion window before the loop resets
+const TABLE_RATE = 240 // sim-time lookup table samples per second
+
+/* -------------------------------------------------------------------------- */
 /* Scene layout and colours (not physics, rarely need tuning)                 */
 /* -------------------------------------------------------------------------- */
 
@@ -118,12 +127,10 @@ const LAYOUT = {
 }
 
 /* -------------------------------------------------------------------------- */
-/* Derived constants                                                          */
+/* Derived constants (independent of speed/driveTime)                         */
 /* -------------------------------------------------------------------------- */
 
 const DT = CONFIG.sim.fixedStep
-const SPEED = CONFIG.car.speed
-const LOOP = CONFIG.timeline.loopDuration
 const WHEELBASE = CONFIG.car.cgToFrontAxle + CONFIG.car.cgToRearAxle
 const POTHOLE_RADIUS = CONFIG.pothole.diameter / 2
 
@@ -153,29 +160,39 @@ const TIRE_PRELOAD = WHEEL_ALONG.map((along) => {
 
 const SHAKE_DECAY_PER_STEP = Math.exp(-CONFIG.camera.shakeDecay * DT)
 
-/* -------------------------------------------------------------------------- */
-/* Timeline: real time -> simulation time                                     */
-/* -------------------------------------------------------------------------- */
-
 function smoothstep(edge0, edge1, x) {
   const t = Math.min(Math.max((x - edge0) / (edge1 - edge0), 0), 1)
   return t * t * (3 - 2 * t)
 }
 
-// How fast simulation time runs at a point in the loop: 1 normally,
-// easing down to slowMotion.timeScale inside the slow motion window.
-function timeScaleAt(loopTime) {
-  const { start, end, timeScale, ramp } = CONFIG.slowMotion
-  const slowness = smoothstep(start, start + ramp, loopTime) - smoothstep(end - ramp, end, loopTime)
-  return 1 + (timeScale - 1) * slowness
-}
+/* -------------------------------------------------------------------------- */
+/* Timeline: everything that depends on `speed` and `driveTime`               */
+/* -------------------------------------------------------------------------- */
 
-// Simulation time is the integral of timeScaleAt over real time. Tabulate it once
-// (trapezoid rule) so every frame maps real time to simulation time exactly.
-// Deriving it from absolute real time, not by summing frame deltas, means the
-// pothole hit lands on the same moment every loop with no drift.
-const TABLE_RATE = 240 // samples per second
-const SIM_TIME_TABLE = (() => {
+// Builds one (speed, driveTime) pair's worth of: the real-time -> simulation-time
+// mapping (with slow motion around the hit), where the pothole sits on the road,
+// and the physics step. Rebuilt whenever the caller changes speed or driveTime.
+function buildTimeline(speed, driveTime) {
+  const slowMotion = {
+    start: Math.max(0, driveTime - HIT_LEAD),
+    end: driveTime + HIT_TRAIL,
+    ramp: SLOWMO_RAMP,
+    timeScale: SLOWMO_SCALE,
+  }
+  const LOOP = driveTime + LOOP_TAIL
+
+  // How fast simulation time runs at a point in the loop: 1 normally,
+  // easing down to slowMotion.timeScale inside the slow motion window.
+  function timeScaleAt(loopTime) {
+    const { start, end, timeScale, ramp } = slowMotion
+    const slowness = smoothstep(start, start + ramp, loopTime) - smoothstep(end - ramp, end, loopTime)
+    return 1 + (timeScale - 1) * slowness
+  }
+
+  // Simulation time is the integral of timeScaleAt over real time. Tabulate it once
+  // (trapezoid rule) so every frame maps real time to simulation time exactly.
+  // Deriving it from absolute real time, not by summing frame deltas, means the
+  // pothole hit lands on the same moment every loop with no drift.
   const samples = Math.round(LOOP * TABLE_RATE)
   const table = new Float64Array(samples + 1)
   for (let i = 1; i <= samples; i++) {
@@ -183,47 +200,128 @@ const SIM_TIME_TABLE = (() => {
     const b = timeScaleAt(i / TABLE_RATE)
     table[i] = table[i - 1] + ((a + b) / 2) * (1 / TABLE_RATE)
   }
-  return table
-})()
-const LOOP_SIM_DURATION = SIM_TIME_TABLE[SIM_TIME_TABLE.length - 1]
+  const LOOP_SIM_DURATION = table[table.length - 1]
 
-function simTimeInLoop(loopTime) {
-  const f = loopTime * TABLE_RATE
-  const i = Math.min(Math.floor(f), SIM_TIME_TABLE.length - 2)
-  return SIM_TIME_TABLE[i] + (SIM_TIME_TABLE[i + 1] - SIM_TIME_TABLE[i]) * (f - i)
-}
+  function simTimeInLoop(loopTime) {
+    const f = loopTime * TABLE_RATE
+    const i = Math.min(Math.floor(f), table.length - 2)
+    return table[i] + (table[i + 1] - table[i]) * (f - i)
+  }
 
-function simTimeAt(realTime) {
-  const loops = Math.floor(realTime / LOOP)
-  return loops * LOOP_SIM_DURATION + simTimeInLoop(realTime - loops * LOOP)
+  function simTimeAt(realTime) {
+    const loops = Math.floor(realTime / LOOP)
+    return loops * LOOP_SIM_DURATION + simTimeInLoop(realTime - loops * LOOP)
+  }
+
+  // Distance along the road is measured from the car's starting point. The car's
+  // centre of gravity is at speed * simTime. One pothole per loop, placed so the
+  // front axle is over its centre at real time driveTime.
+  const POTHOLE_FIRST = speed * simTimeInLoop(driveTime) + CONFIG.car.cgToFrontAxle
+  const POTHOLE_SPACING = speed * LOOP_SIM_DURATION
+
+  // Road surface height at a point: 0 on flat road, a smooth dip in the pothole.
+  // Inside the hole the profile is a half-cosine of the distance r from its centre:
+  //   h(r) = -depth * (1 + cos(pi * r / R)) / 2
+  // which is -depth at the centre and eases to 0 with zero slope at the rim r = R,
+  // so the wheel sees no sudden step.
+  function roadHeight(along, across) {
+    const n = Math.round((along - POTHOLE_FIRST) / POTHOLE_SPACING)
+    const dAlong = along - (POTHOLE_FIRST + n * POTHOLE_SPACING)
+    const dAcross = across - CONFIG.pothole.lateralOffset
+    const r = Math.sqrt(dAlong * dAlong + dAcross * dAcross)
+    if (r >= POTHOLE_RADIUS) return 0
+    return -CONFIG.pothole.depth * 0.5 * (1 + Math.cos((Math.PI * r) / POTHOLE_RADIUS))
+  }
+
+  // Advance the whole car by one fixed step with semi-implicit (symplectic) Euler:
+  // compute every force from the current state, update velocities from the forces,
+  // then update positions from the new velocities. This ordering keeps spring-mass
+  // systems stable at a fixed step where plain explicit Euler would gain energy.
+  function stepPhysics(sim) {
+    const x = sim.curr
+    const fs = sim.suspensionForce
+    const ft = sim.tireForce
+    const { mass, pitchInertia, rollInertia } = CONFIG.car
+    const { springRate: k, damping: c } = CONFIG.suspension
+    const { mass: wheelMass, tireRate } = CONFIG.wheel
+
+    sim.prev.set(x)
+    const distance = speed * sim.steps * DT // road position of the centre of gravity
+
+    for (let i = 0; i < 4; i++) {
+      // Height and vertical speed of the body where corner i's strut attaches.
+      // For small angles a point `along` ahead and `across` right of the pivot
+      // moves by  heave + along * pitch + across * roll.
+      const bodyY = x[HEAVE] + WHEEL_ALONG[i] * x[PITCH] + WHEEL_ACROSS[i] * x[ROLL]
+      const bodyV = x[HEAVE_V] + WHEEL_ALONG[i] * x[PITCH_V] + WHEEL_ACROSS[i] * x[ROLL_V]
+
+      // Quarter-car spring-damper between the body corner and the wheel.
+      // extension > 0 means the strut is longer than at rest.
+      //   F = -k * extension - c * extensionRate
+      // F > 0 pushes the body up and, by reaction, the wheel down.
+      const extension = bodyY - x[WHEEL_Y + i]
+      const extensionRate = bodyV - x[WHEEL_V + i]
+      fs[i] = -k * extension - c * extensionRate
+
+      // Tire as a stiff one-sided spring between road and wheel:
+      //   F = tireRate * (road - wheel)
+      // clamped so the total tire force (preload + deviation) never pulls down.
+      const road = roadHeight(distance + WHEEL_ALONG[i], WHEEL_ACROSS[i])
+      ft[i] = Math.max(tireRate * (road - x[WHEEL_Y + i]), -TIRE_PRELOAD[i])
+
+      // Kick the camera shake as each wheel drops into the hole.
+      const inside = road < 0 ? 1 : 0
+      if (inside && !sim.inPothole[i]) sim.shake = CONFIG.camera.shakeAmplitude
+      sim.inPothole[i] = inside
+    }
+
+    // Rigid body: the four strut forces give
+    //   heave:  M  * z''     = sum(F_i)
+    //   pitch:  Ip * theta'' = sum(along_i  * F_i)   (front forces lift the nose)
+    //   roll:   Ir * phi''   = sum(across_i * F_i)   (right forces lift the right side)
+    let force = 0
+    let pitchTorque = 0
+    let rollTorque = 0
+    for (let i = 0; i < 4; i++) {
+      force += fs[i]
+      pitchTorque += WHEEL_ALONG[i] * fs[i]
+      rollTorque += WHEEL_ACROSS[i] * fs[i]
+    }
+    sim.bodyAccel = force / mass
+    x[HEAVE_V] += (force / mass) * DT
+    x[PITCH_V] += (pitchTorque / pitchInertia) * DT
+    x[ROLL_V] += (rollTorque / rollInertia) * DT
+    x[HEAVE] += x[HEAVE_V] * DT
+    x[PITCH] += x[PITCH_V] * DT
+    x[ROLL] += x[ROLL_V] * DT
+
+    // Each wheel: tire pushes it up, the strut pushes it down.
+    //   m_w * y_w'' = F_tire - F_strut
+    for (let i = 0; i < 4; i++) {
+      x[WHEEL_V + i] += ((ft[i] - fs[i]) / wheelMass) * DT
+      x[WHEEL_Y + i] += x[WHEEL_V + i] * DT
+    }
+
+    sim.shake *= SHAKE_DECAY_PER_STEP
+    sim.steps += 1
+  }
+
+  return {
+    SPEED: speed,
+    LOOP,
+    LOOP_SIM_DURATION,
+    POTHOLE_FIRST,
+    POTHOLE_SPACING,
+    timeScaleAt,
+    simTimeInLoop,
+    simTimeAt,
+    roadHeight,
+    stepPhysics,
+  }
 }
 
 /* -------------------------------------------------------------------------- */
-/* Road                                                                       */
-/* -------------------------------------------------------------------------- */
-
-// Distance along the road is measured from the car's starting point. The car's
-// centre of gravity is at SPEED * simTime. One pothole per loop, placed so the
-// front axle is over its centre at timeline.frontHitAt.
-const POTHOLE_FIRST = SPEED * simTimeInLoop(CONFIG.timeline.frontHitAt) + CONFIG.car.cgToFrontAxle
-const POTHOLE_SPACING = SPEED * LOOP_SIM_DURATION
-
-// Road surface height at a point: 0 on flat road, a smooth dip in the pothole.
-// Inside the hole the profile is a half-cosine of the distance r from its centre:
-//   h(r) = -depth * (1 + cos(pi * r / R)) / 2
-// which is -depth at the centre and eases to 0 with zero slope at the rim r = R,
-// so the wheel sees no sudden step.
-function roadHeight(along, across) {
-  const n = Math.round((along - POTHOLE_FIRST) / POTHOLE_SPACING)
-  const dAlong = along - (POTHOLE_FIRST + n * POTHOLE_SPACING)
-  const dAcross = across - CONFIG.pothole.lateralOffset
-  const r = Math.sqrt(dAlong * dAlong + dAcross * dAcross)
-  if (r >= POTHOLE_RADIUS) return 0
-  return -CONFIG.pothole.depth * 0.5 * (1 + Math.cos((Math.PI * r) / POTHOLE_RADIUS))
-}
-
-/* -------------------------------------------------------------------------- */
-/* Suspension physics                                                         */
+/* Suspension physics state                                                   */
 /* -------------------------------------------------------------------------- */
 
 // State vector, all values are deviations from the car at rest on flat road,
@@ -238,7 +336,7 @@ const WHEEL_Y = 6 // 6..9, m, wheel centre up
 const WHEEL_V = 10 // 10..13, m/s
 const STATE_SIZE = 14
 
-function createSim() {
+function createSim(speed) {
   return {
     realTime: 0,
     steps: 0, // fixed steps taken; simulation time is steps * DT
@@ -247,8 +345,9 @@ function createSim() {
     suspensionForce: new Float64Array(4),
     telemetry: {
       loopTime: 0,
+      loopDuration: 0,
       timeScale: 1,
-      speed: SPEED,
+      speed,
       verticalAccel: 0,
       pitchRate: 0,
       rollRate: 0,
@@ -265,79 +364,6 @@ function createSim() {
     cameraTarget: new THREE.Vector3(...CONFIG.camera.lookAt),
     desired: new THREE.Vector3(),
   }
-}
-
-// Advance the whole car by one fixed step with semi-implicit (symplectic) Euler:
-// compute every force from the current state, update velocities from the forces,
-// then update positions from the new velocities. This ordering keeps spring-mass
-// systems stable at a fixed step where plain explicit Euler would gain energy.
-function stepPhysics(sim) {
-  const x = sim.curr
-  const fs = sim.suspensionForce
-  const ft = sim.tireForce
-  const { mass, pitchInertia, rollInertia } = CONFIG.car
-  const { springRate: k, damping: c } = CONFIG.suspension
-  const { mass: wheelMass, tireRate } = CONFIG.wheel
-
-  sim.prev.set(x)
-  const distance = SPEED * sim.steps * DT // road position of the centre of gravity
-
-  for (let i = 0; i < 4; i++) {
-    // Height and vertical speed of the body where corner i's strut attaches.
-    // For small angles a point `along` ahead and `across` right of the pivot
-    // moves by  heave + along * pitch + across * roll.
-    const bodyY = x[HEAVE] + WHEEL_ALONG[i] * x[PITCH] + WHEEL_ACROSS[i] * x[ROLL]
-    const bodyV = x[HEAVE_V] + WHEEL_ALONG[i] * x[PITCH_V] + WHEEL_ACROSS[i] * x[ROLL_V]
-
-    // Quarter-car spring-damper between the body corner and the wheel.
-    // extension > 0 means the strut is longer than at rest.
-    //   F = -k * extension - c * extensionRate
-    // F > 0 pushes the body up and, by reaction, the wheel down.
-    const extension = bodyY - x[WHEEL_Y + i]
-    const extensionRate = bodyV - x[WHEEL_V + i]
-    fs[i] = -k * extension - c * extensionRate
-
-    // Tire as a stiff one-sided spring between road and wheel:
-    //   F = tireRate * (road - wheel)
-    // clamped so the total tire force (preload + deviation) never pulls down.
-    const road = roadHeight(distance + WHEEL_ALONG[i], WHEEL_ACROSS[i])
-    ft[i] = Math.max(tireRate * (road - x[WHEEL_Y + i]), -TIRE_PRELOAD[i])
-
-    // Kick the camera shake as each wheel drops into the hole.
-    const inside = road < 0 ? 1 : 0
-    if (inside && !sim.inPothole[i]) sim.shake = CONFIG.camera.shakeAmplitude
-    sim.inPothole[i] = inside
-  }
-
-  // Rigid body: the four strut forces give
-  //   heave:  M  * z''     = sum(F_i)
-  //   pitch:  Ip * theta'' = sum(along_i  * F_i)   (front forces lift the nose)
-  //   roll:   Ir * phi''   = sum(across_i * F_i)   (right forces lift the right side)
-  let force = 0
-  let pitchTorque = 0
-  let rollTorque = 0
-  for (let i = 0; i < 4; i++) {
-    force += fs[i]
-    pitchTorque += WHEEL_ALONG[i] * fs[i]
-    rollTorque += WHEEL_ACROSS[i] * fs[i]
-  }
-  sim.bodyAccel = force / mass
-  x[HEAVE_V] += (force / mass) * DT
-  x[PITCH_V] += (pitchTorque / pitchInertia) * DT
-  x[ROLL_V] += (rollTorque / rollInertia) * DT
-  x[HEAVE] += x[HEAVE_V] * DT
-  x[PITCH] += x[PITCH_V] * DT
-  x[ROLL] += x[ROLL_V] * DT
-
-  // Each wheel: tire pushes it up, the strut pushes it down.
-  //   m_w * y_w'' = F_tire - F_strut
-  for (let i = 0; i < 4; i++) {
-    x[WHEEL_V + i] += ((ft[i] - fs[i]) / wheelMass) * DT
-    x[WHEEL_Y + i] += x[WHEEL_V + i] * DT
-  }
-
-  sim.shake *= SHAKE_DECAY_PER_STEP
-  sim.steps += 1
 }
 
 /* -------------------------------------------------------------------------- */
@@ -706,7 +732,7 @@ function positiveModulo(value, period) {
   return ((value % period) + period) % period
 }
 
-function formatHud(sim, pitch, roll, loopTime) {
+function formatHud(sim, pitch, roll, loopTime, timeline) {
   const compression = (i) => {
     const x = sim.curr
     const bodyY = x[HEAVE] + WHEEL_ALONG[i] * x[PITCH] + WHEEL_ACROSS[i] * x[ROLL]
@@ -718,12 +744,12 @@ function formatHud(sim, pitch, roll, loopTime) {
     `Rear  L/R ${compression(2)} ${compression(3)} cm`,
     `Pitch     ${deg(pitch)} deg`,
     `Roll      ${deg(roll)} deg`,
-    `Speed     ${SPEED.toFixed(1)} m/s  x${timeScaleAt(loopTime).toFixed(2)}`,
+    `Speed     ${timeline.SPEED.toFixed(1)} m/s  x${timeline.timeScaleAt(loopTime).toFixed(2)}`,
     `Loop      ${loopTime.toFixed(1).padStart(4)} s`,
   ].join('\n')
 }
 
-function Simulation({ hudRef, onTelemetry, playing }) {
+function Simulation({ hudRef, onTelemetry, playing, speed, driveTime }) {
   const simRef = useRef(null)
   const { geometries, materials } = useResources()
   const bodyRef = useRef(null)
@@ -732,15 +758,22 @@ function Simulation({ hudRef, onTelemetry, playing }) {
   const dashesRef = useRef(null)
   const potholeRef = useRef(null)
 
+  const timeline = useMemo(() => buildTimeline(speed, driveTime), [speed, driveTime])
+  // The pothole's road position and the sim-time lookup table only hold for the
+  // (speed, driveTime) pair they were built for, so a change starts the drive over.
+  useEffect(() => {
+    simRef.current = null
+  }, [timeline])
+
   useFrame(({ camera }, delta) => {
-    simRef.current ??= createSim()
+    simRef.current ??= createSim(timeline.SPEED)
     const sim = simRef.current
 
     // 1. Advance physics in fixed steps until it catches up with the timeline.
     // While paused the clock stands still, so the physics takes no steps and the car holds its pose.
     if (playing) sim.realTime += Math.min(delta, CONFIG.sim.maxFrameDelta)
-    const target = simTimeAt(sim.realTime)
-    while ((sim.steps + 1) * DT <= target) stepPhysics(sim)
+    const target = timeline.simTimeAt(sim.realTime)
+    while ((sim.steps + 1) * DT <= target) timeline.stepPhysics(sim)
 
     // 2. Blend the last two physics states for display. In slow motion a 60 Hz
     //    frame is shorter than a physics step, so without this blend motion
@@ -749,15 +782,15 @@ function Simulation({ hudRef, onTelemetry, playing }) {
     const { prev, curr } = sim
     const blend = (i) => prev[i] + (curr[i] - prev[i]) * alpha
     const renderTime = target - DT // prev is one step behind curr
-    const distance = SPEED * renderTime
+    const distance = timeline.SPEED * renderTime
 
     // 3. Treadmill: slide repeating content toward the camera by the distance
     //    travelled, wrapped to one period so it snaps back seamlessly.
     buildingsRef.current.position.z = positiveModulo(distance, BLOCK_LENGTH)
     dashesRef.current.position.z = positiveModulo(distance, LAYOUT.dashSpacing)
     // Show the next pothole ahead, or the one just passed until it is behind the camera.
-    const n = Math.ceil((distance - 15 - POTHOLE_FIRST) / POTHOLE_SPACING)
-    potholeRef.current.position.z = distance - (POTHOLE_FIRST + n * POTHOLE_SPACING)
+    const n = Math.ceil((distance - 15 - timeline.POTHOLE_FIRST) / timeline.POTHOLE_SPACING)
+    potholeRef.current.position.z = distance - (timeline.POTHOLE_FIRST + n * timeline.POTHOLE_SPACING)
 
     // 4. Car body: heave, pitch and roll only. Wheels only move vertically and spin.
     const gain = CONFIG.display.bodyMotionGain
@@ -792,14 +825,15 @@ function Simulation({ hudRef, onTelemetry, playing }) {
     //    and React never re-renders per frame. The callback should only read from it.
     if (onTelemetry) {
       const telemetry = sim.telemetry
-      telemetry.loopTime = positiveModulo(sim.realTime, LOOP)
-      telemetry.timeScale = timeScaleAt(telemetry.loopTime)
+      telemetry.loopTime = positiveModulo(sim.realTime, timeline.LOOP)
+      telemetry.loopDuration = timeline.LOOP
+      telemetry.timeScale = timeline.timeScaleAt(telemetry.loopTime)
       telemetry.verticalAccel = sim.bodyAccel // m/s^2, gravity excluded
       telemetry.pitchRate = sim.curr[PITCH_V] // rad/s
       telemetry.rollRate = sim.curr[ROLL_V] // rad/s
       telemetry.wheelInHole = sim.inPothole[0] + sim.inPothole[1] + sim.inPothole[2] + sim.inPothole[3]
-      telemetry.pass = Math.floor(sim.realTime / LOOP) // which trip past the pothole this is
-      telemetry.passSimTime = simTimeInLoop(telemetry.loopTime) // simulation s since this pass began
+      telemetry.pass = Math.floor(sim.realTime / timeline.LOOP) // which trip past the pothole this is
+      telemetry.passSimTime = timeline.simTimeInLoop(telemetry.loopTime) // simulation s since this pass began
       onTelemetry(telemetry)
     }
 
@@ -807,7 +841,7 @@ function Simulation({ hudRef, onTelemetry, playing }) {
     sim.hudClock += delta
     if (hudRef.current && sim.hudClock >= 0.1) {
       sim.hudClock = 0
-      hudRef.current.textContent = formatHud(sim, pitch, roll, positiveModulo(sim.realTime, LOOP))
+      hudRef.current.textContent = formatHud(sim, pitch, roll, positiveModulo(sim.realTime, timeline.LOOP), timeline)
     }
   })
 
@@ -847,12 +881,16 @@ const HUD_STYLE = {
  * @param {object} props
  * @param {boolean} [props.showHud=false] shows suspension compression, pitch, roll and speed
  * @param {boolean} [props.playing=true] false freezes the clock, so nothing moves until it is true again
+ * @param {number} [props.speed=8] car speed in m/s
+ * @param {number} [props.driveTime=5] real seconds until the front axle is over the pothole.
+ *   Changing this (or `speed`) restarts the drive, since the pothole's road position and the
+ *   slow-motion timing are both derived from it.
  * @param {(telemetry: object) => void} [props.onTelemetry] called every frame with a reused object
- *   holding loopTime, timeScale, speed, verticalAccel, pitchRate, rollRate, wheelInHole,
- *   pass (loops completed) and passSimTime (simulation seconds into the current loop).
+ *   holding loopTime, loopDuration, timeScale, speed, verticalAccel, pitchRate, rollRate,
+ *   wheelInHole, pass (loops completed) and passSimTime (simulation seconds into the current loop).
  *   Copy what you need and do not keep the object's values in React state per frame.
  */
-export default function CityBlockScene({ showHud = false, playing = true, onTelemetry }) {
+export default function CityBlockScene({ showHud = false, playing = true, speed = 8, driveTime = 5, onTelemetry }) {
   const hudRef = useRef(null)
   return (
     <div
@@ -870,7 +908,7 @@ export default function CityBlockScene({ showHud = false, playing = true, onTele
         <fog attach="fog" args={[COLORS.sky, ...LAYOUT.fog]} />
         <ambientLight intensity={1.3} />
         <directionalLight position={[-30, 50, 25]} intensity={1.8} />
-        <Simulation hudRef={hudRef} onTelemetry={onTelemetry} playing={playing} />
+        <Simulation hudRef={hudRef} onTelemetry={onTelemetry} playing={playing} speed={speed} driveTime={driveTime} />
       </Canvas>
       {showHud && <pre ref={hudRef} style={HUD_STYLE} />}
     </div>
