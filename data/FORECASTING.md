@@ -10,6 +10,7 @@ python data/analysis/fetch_chicago_history.py     # ~62 MB, cached, no API keys
 python data/analysis/study_pothole_lifecycle.py   # the four research questions
 python data/analysis/study_traffic_intensity.py   # the traffic follow-up
 python data/analysis/calibrate_model.py           # writes the model constants
+python data/analysis/fetch_downtown_streets.py    # real street basemap
 python mock/pothole_history.py                    # synthetic history for the map
 npm --prefix web run verify:forecast              # 39 checks on the model maths
 ```
@@ -218,6 +219,30 @@ about twelve months. The *qualitative* conclusion is robust to the anchor
 choice; the *timing* is not, which is why the band is wide and prominent.
 
 ---
+
+## The map
+
+The forecast map draws **real Chicago street centrelines** from the city's own
+open data (Socrata `pr57-gg9e`), for a 930 m by 3.2 km strip running from
+Halsted across the river into the Loop, with Union Station near its centre. 551
+segments and 72 named streets, drawn at four stroke weights by street class so
+the arterials read as arterials.
+
+The synthetic potholes are placed **on** those segments rather than scattered
+near them, sampled by segment length and weighted by class — so a pin on Canal
+Street is on Canal Street, and the busiest streets in the generated set come out
+as W Madison, W Van Buren, W Adams and S Halsted. Length weighting matters:
+sampling segments uniformly piles holes onto short stubs near intersections,
+because a 20 m connector draws as often as a 300 m block.
+
+The window is deliberately wide and short, matching the panel it sits in. A
+square geographic window inside a 3.45:1 frame leaves two thirds of the map
+empty and shrinks the streets to a stamp in the middle — which is exactly what
+the first version did.
+
+The projection is fixed to the basemap's bounds, not to the visible potholes.
+The set on screen changes on every scrubber step, and a frame that refit itself
+each time would make the city drift while you were trying to read one block.
 
 ## Showing the mechanism
 

@@ -1,25 +1,53 @@
 /* Forecast page ---------------------------------------------------------- */
 
 .fcast {
-  padding: 40px 0 80px;
+  padding: 14px 0 28px;
 }
 
-.fcast__head {
-  max-width: 62ch;
-  margin: 24px 0 24px;
+/* The page is meant to be read without scrolling: the timeline, the drivers and
+   the map all describe the same instant, and a reader who has to scroll between
+   them loses the connection. Everything below is sized to that. */
+.fcast__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin: 4px 0 10px;
 }
 
-.fcast__head h1 {
-  margin: 8px 0 12px;
-  font-size: clamp(1.75rem, 3.6vw, 2.5rem);
-  line-height: 1.15;
-  letter-spacing: -0.02em;
+.fcast__title h1 {
+  margin: 4px 0 0;
+  font-size: clamp(1.125rem, 1.8vw, 1.4rem);
+  line-height: 1.2;
+  letter-spacing: -0.015em;
 }
 
-.fcast__lede {
-  margin: 0;
+/* The provenance note matters but does not need to shout on every visit. */
+.fcast__note {
+  max-width: 44ch;
+  font-size: 0.8125rem;
+}
+
+.fcast__note summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  background: var(--amber-pale);
+  border: 1px solid #f0e2b6;
+  border-radius: 9999px;
+  color: var(--amber-ink);
+  cursor: pointer;
+  list-style: none;
+}
+
+.fcast__note summary::-webkit-details-marker { display: none; }
+
+.fcast__note p {
+  margin: 8px 0 0;
   color: var(--ink-soft);
-  line-height: 1.6;
+  line-height: 1.55;
 }
 
 .banner--info {
@@ -38,9 +66,10 @@
 /* Transport and scrubber ------------------------------------------------- */
 
 .fcast__controls {
-  display: grid;
-  gap: 12px;
-  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 14px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-card);
@@ -50,14 +79,14 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  flex-wrap: wrap;
+  flex: none;
 }
 
 .fcast__stamp {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  margin: 0 0 0 auto;
+  gap: 8px;
+  margin: 0;
   font-variant-numeric: tabular-nums;
 }
 
@@ -67,8 +96,11 @@
 
 /* The slider is the primary control, so it gets a visible track and a large
    grab target rather than the browser default. */
+.fcast__slider { flex: 1; display: block; }
+
 .fcast__slider input {
   width: 100%;
+  display: block;
   margin: 0;
   accent-color: var(--amber);
   cursor: pointer;
@@ -78,7 +110,7 @@
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 1px;
-  margin: 16px 0;
+  margin: 8px 0;
   padding: 0;
   background: var(--border);
   border: 1px solid var(--border);
@@ -87,7 +119,7 @@
 }
 
 .fcast__stats > div {
-  padding: 14px 16px;
+  padding: 7px 12px;
   background: var(--surface);
 }
 
@@ -99,8 +131,8 @@
 }
 
 .fcast__stats dd {
-  margin: 4px 0 0;
-  font: 700 1.5rem var(--font-body);
+  margin: 2px 0 0;
+  font: 700 1.25rem var(--font-body);
   font-variant-numeric: tabular-nums;
 }
 
@@ -113,8 +145,8 @@
 /* Timeline --------------------------------------------------------------- */
 
 .ftl {
-  margin: 0 0 16px;
-  padding: 16px 20px 8px;
+  margin: 0 0 12px;
+  padding: 12px 16px 4px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-card);
@@ -173,23 +205,23 @@
 
 .ftl__now {
   stroke: var(--ink);
-  stroke-width: 1.5;
-  stroke-dasharray: 3 3;
+  stroke-width: 3;
+  stroke-dasharray: 7 7;
 }
 
 .ftl__nowlabel {
   fill: var(--ink);
-  font: 600 11px var(--font-mono);
+  font: 600 24px var(--font-mono);
 }
 
 .ftl__cursor {
   stroke: var(--amber-ink);
-  stroke-width: 2;
+  stroke-width: 4;
 }
 
 .ftl__year {
   fill: var(--muted);
-  font: 500 11px var(--font-mono);
+  font: 500 24px var(--font-mono);
   text-anchor: middle;
 }
 
@@ -202,9 +234,14 @@
 
 .fcast__grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 320px;
-  gap: 20px;
+  grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+  gap: 12px;
   align-items: start;
+}
+
+.fcast__side {
+  display: grid;
+  gap: 12px;
 }
 
 .fcast__stage {
@@ -212,7 +249,7 @@
 }
 
 .fcast__canvas {
-  padding: 12px;
+  padding: 8px;
   background: var(--surface);
 }
 
@@ -261,7 +298,7 @@
 
 .fcast__legend {
   margin: 0;
-  padding: 12px 16px;
+  padding: 8px 12px;
   border-top: 1px solid var(--border);
   color: var(--muted);
   font-size: 0.8125rem;
@@ -271,7 +308,7 @@
 /* Detail ----------------------------------------------------------------- */
 
 .fdetail {
-  padding: 20px;
+  padding: 14px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-card);
@@ -280,8 +317,8 @@
 .fdetail--empty {
   display: grid;
   justify-items: center;
-  gap: 10px;
-  padding: 40px 20px;
+  gap: 8px;
+  padding: 20px;
   color: var(--muted);
   text-align: center;
 }
@@ -300,7 +337,7 @@
 }
 
 .fdetail__now strong {
-  font-size: 2.25rem;
+  font-size: 1.75rem;
   line-height: 1;
   font-variant-numeric: tabular-nums;
 }
@@ -336,9 +373,9 @@
 
 .fdetail__rows {
   display: grid;
-  gap: 8px;
+  gap: 5px;
   margin: 0;
-  padding-top: 12px;
+  padding-top: 10px;
   border-top: 1px solid var(--border);
   font-size: 0.875rem;
 }
@@ -362,17 +399,20 @@
 /* Caveats ---------------------------------------------------------------- */
 
 .fcast__caveats {
-  margin-top: 28px;
-  padding: 24px;
+  margin-top: 12px;
+  padding: 12px 16px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-card);
 }
 
-.fcast__caveats h2 {
-  margin: 0 0 14px;
-  font-size: 1.125rem;
+.fcast__caveats summary {
+  font-weight: 700;
+  font-size: 0.9375rem;
+  cursor: pointer;
 }
+
+.fcast__caveats[open] summary { margin-bottom: 12px; }
 
 .fcast__caveats ul {
   display: grid;
@@ -475,8 +515,8 @@
 /* Conditions ------------------------------------------------------------- */
 
 .cond {
-  margin: 0 0 20px;
-  padding: 18px 20px;
+  margin: 0;
+  padding: 10px 12px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-card);
@@ -486,9 +526,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: 10px;
   flex-wrap: wrap;
-  margin-bottom: 14px;
+  margin-bottom: 8px;
 }
 
 .cond__when {
@@ -499,7 +539,7 @@
 
 .cond__month {
   margin: 0;
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   font-weight: 700;
   letter-spacing: -0.01em;
 }
@@ -507,12 +547,12 @@
 .cond__year {
   margin: 0;
   color: var(--muted);
-  font: 500 1.25rem var(--font-mono);
+  font: 500 1.0625rem var(--font-mono);
 }
 
 .cond__grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1px;
   background: var(--border);
   border: 1px solid var(--border);
@@ -523,8 +563,8 @@
 .cond__stat {
   display: flex;
   align-items: flex-start;
-  gap: 10px;
-  padding: 12px 14px;
+  gap: 8px;
+  padding: 6px 9px;
   background: var(--surface);
 }
 
@@ -557,21 +597,21 @@
 }
 
 .cond__value {
-  font: 700 1.125rem var(--font-body);
+  font: 700 1rem var(--font-body);
   font-variant-numeric: tabular-nums;
 }
 
 .cond__sub {
   color: var(--muted);
-  font-size: 0.75rem;
-  line-height: 1.35;
+  font-size: 0.6875rem;
+  line-height: 1.3;
 }
 
 .cond__chain {
-  margin: 14px 0 0;
+  margin: 8px 0 0;
   color: var(--ink-soft);
-  font-size: 0.9375rem;
-  line-height: 1.6;
+  font-size: 0.8125rem;
+  line-height: 1.5;
 }
 
 /* Freeze-thaw track on the timeline -------------------------------------- */
@@ -603,4 +643,171 @@
    motion gets the cold cast and the numbers, without the particles. */
 @media (prefers-reduced-motion: reduce) {
   .wx__bit { display: none; }
+}
+
+/* Street basemap --------------------------------------------------------- */
+
+/* Real Chicago centrelines. Drawn as four stroke weights by street class so
+   the arterials read as arterials and the map is legible as a place rather
+   than as a mesh -- at this zoom every line the same width is unreadable. */
+
+.fmap__street {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.fmap__street--c4 { stroke: #d6d3ca; }
+.fmap__street--c3 { stroke: #c6c2b7; }
+.fmap__street--c2 { stroke: #b2ada0; }
+.fmap__street--c1 { stroke: #a09a8c; }
+
+.fmap__landmark-box {
+  fill: var(--surface);
+  stroke: var(--ink);
+  stroke-width: 1.5;
+}
+
+.fmap__landmark {
+  fill: var(--ink);
+  font: 600 11px var(--font-mono);
+  paint-order: stroke;
+  stroke: var(--surface-alt);
+  stroke-width: 3;
+}
+
+.fmap--compact .fmap__landmark { font-size: 13px; }
+
+/* Window chrome ---------------------------------------------------------- */
+
+.window__bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.window__dots {
+  display: inline-flex;
+  gap: 5px;
+}
+
+.window__title {
+  color: var(--muted);
+  font: 500 0.75rem var(--font-mono);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.window__expand {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: auto;
+  padding: 3px 9px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-btn);
+  background: var(--surface);
+  color: var(--ink-soft);
+  font: 600 0.75rem var(--font-body);
+  cursor: pointer;
+}
+
+.window__expand:hover {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+/* Expanded window -------------------------------------------------------- */
+
+.fexp {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+/* A button rather than a div, so the scrim is reachable and announced rather
+   than being an invisible click target only a mouse can find. */
+.fexp__scrim {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  padding: 0;
+  background: rgba(17, 17, 17, 0.45);
+  cursor: pointer;
+}
+
+.fexp__sheet {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: min(1500px, 100%);
+  max-height: calc(100vh - 48px);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+}
+
+.fexp__bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-alt);
+}
+
+.fexp__title {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-right: auto;
+  font: 600 0.875rem var(--font-body);
+}
+
+.fexp__when {
+  color: var(--muted);
+  font: 500 0.8125rem var(--font-mono);
+}
+
+.fexp__close {
+  display: inline-flex;
+  padding: 5px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-btn);
+  background: var(--surface);
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+
+.fexp__close:hover { border-color: var(--ink); color: var(--ink); }
+
+.fexp__body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 330px;
+  gap: 14px;
+  padding: 14px;
+  overflow: auto;
+}
+
+.fexp__side {
+  display: grid;
+  gap: 12px;
+  align-content: start;
+}
+
+/* Inside the expanded window the controls are already on a panel, so they drop
+   their own border rather than stacking two. */
+.fexp__side .fcast__controls {
+  padding: 0;
+  border: 0;
+  background: none;
+}
+
+@media (max-width: 1100px) {
+  .fexp__body { grid-template-columns: minmax(0, 1fr); }
+  .fcast__grid { grid-template-columns: minmax(0, 1fr); }
 }

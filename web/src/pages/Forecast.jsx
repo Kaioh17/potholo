@@ -1,8 +1,16 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowLeft, Info, Pause, Play, SkipBack, WarningCircle } from '@phosphor-icons/react'
+import {
+  ArrowLeft,
+  ArrowsIn,
+  ArrowsOut,
+  Info,
+  Pause,
+  Play,
+  SkipBack,
+  X,
+} from '@phosphor-icons/react'
 import Nav from '../components/Nav.jsx'
-import Footer from '../components/Footer.jsx'
 import ForecastMap from '../components/ForecastMap.jsx'
 import WeatherLayer from '../components/WeatherLayer.jsx'
 import Conditions from '../components/Conditions.jsx'
@@ -11,7 +19,6 @@ import {
   climateFor,
   clusterDetectedAt,
   fleetTrack,
-  model,
   monthsToReach,
   precipitationFor,
   severityAt,
@@ -24,23 +31,19 @@ const STEP_MS = 420
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 const stamp = (d) => `${MONTHS[d.getMonth()]} ${d.getFullYear()}`
+const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v))
 
 const monthsFromNow = (origin, offset) =>
   new Date(origin.getFullYear(), origin.getMonth() + offset, origin.getDate())
 
 /* ------------------------------- Timeline chart ---------------------------- */
 
-/**
- * Fleet composition over the whole window.
- *
- * The map answers "where"; this answers "how much worse, and when". Stacked
- * because the total is meaningful -- potholes are never removed in this
- * scenario, so the stack only grows, and the shape of the severe band is the
- * whole argument for fixing them early.
- */
 function Timeline({ series, offset, onScrub, nowIndex }) {
-  const W = 1000
-  const H = 150
+  // Wide and flat on purpose: the SVG scales to the container, so the viewBox
+  // aspect ratio is what decides how many vertical pixels the chart eats. At
+  // 2400 x 200 it lands around 130px on a laptop, where 1000 x 144 took 210.
+  const W = 2400
+  const H = 148
   const max = Math.max(1, ...series.map((s) => s.minor + s.moderate + s.severe))
   const x = (i) => (i / Math.max(1, series.length - 1)) * W
   const y = (v) => H - (v / max) * H
@@ -61,7 +64,7 @@ function Timeline({ series, offset, onScrub, nowIndex }) {
   return (
     <figure className="ftl">
       <figcaption className="ftl__head">
-        <span className="eyebrow">Fleet composition, {BACK_MONTHS} months back and {AHEAD_MONTHS} ahead</span>
+        <span className="eyebrow">Fleet composition, {BACK_MONTHS}m back and {AHEAD_MONTHS} ahead</span>
         <span className="ftl__keys">
           <span className="ftl__key ftl__key--severe">Severe 70+</span>
           <span className="ftl__key ftl__key--moderate">Moderate 40-69</span>
@@ -69,34 +72,33 @@ function Timeline({ series, offset, onScrub, nowIndex }) {
           <span className="ftl__key ftl__key--ft">Freeze-thaw days</span>
         </span>
       </figcaption>
-      <svg viewBox={`0 0 ${W} ${H + 46}`} className="ftl__svg" role="img"
-        aria-label="Stacked count of potholes by severity band over time">
+      <svg viewBox={`0 0 ${W} ${H + 52}`} className="ftl__svg" role="img"
+        aria-label="Stacked count of potholes by severity band over time, with freeze-thaw days beneath">
         <path className="ftl__area ftl__area--minor" d={area(total, modPlusSevere)} />
         <path className="ftl__area ftl__area--moderate" d={area(modPlusSevere, severe)} />
         <path className="ftl__area ftl__area--severe" d={area(severe, zero)} />
 
-        {/* Everything right of this line is model output, not observation. */}
-        <line className="ftl__now" x1={x(nowIndex)} y1={0} x2={x(nowIndex)} y2={H} />
-        <text className="ftl__nowlabel" x={x(nowIndex) + 6} y={12}>today</text>
         <rect className="ftl__future" x={x(nowIndex)} y={0} width={W - x(nowIndex)} height={H} />
+        <line className="ftl__now" x1={x(nowIndex)} y1={0} x2={x(nowIndex)} y2={H} />
+        <text className="ftl__nowlabel" x={x(nowIndex) + 10} y={24}>today</text>
 
         <line className="ftl__cursor" x1={x(offset + BACK_MONTHS)} y1={0}
           x2={x(offset + BACK_MONTHS)} y2={H} />
 
         {/* Freeze-thaw days per month, on the same axis as the growth above it.
             The winter bars line up with every step in the staircase, which is
-            the correlation the study found, drawn rather than asserted. */}
+            the study's correlation drawn rather than asserted. */}
         {series.map((s, i) => {
           const c = climateFor(s.at)
-          const h = (c.ft_days / 20) * 16
+          const h = (c.ft_days / 20) * 18
           return c.ft_days > 0 ? (
             <rect key={`ft${i}`} className={`ftl__ft${c.actual ? '' : ' ftl__ft--normal'}`}
-              x={x(i) - 3} y={H + 4} width={6} height={Math.max(1, h)} />
+              x={x(i) - 6} y={H + 5} width={12} height={Math.max(2, h)} />
           ) : null
         })}
         {series.map((s, i) =>
           s.at.getMonth() === 0 ? (
-            <text key={i} className="ftl__year" x={x(i)} y={H + 38}>{s.at.getFullYear()}</text>
+            <text key={i} className="ftl__year" x={x(i)} y={H + 46}>{s.at.getFullYear()}</text>
           ) : null,
         )}
         <rect className="ftl__hit" x="0" y="0" width={W} height={H}
@@ -111,26 +113,24 @@ function Timeline({ series, offset, onScrub, nowIndex }) {
   )
 }
 
-const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v))
-
 /* -------------------------------- Detail panel ----------------------------- */
 
 function Detail({ pothole, at, origin }) {
   if (!pothole) {
     return (
       <aside className="fdetail fdetail--empty">
-        <Info size={20} weight="bold" aria-hidden="true" />
-        <p>Select a pothole on the map to see its projected trajectory.</p>
+        <Info size={18} weight="bold" aria-hidden="true" />
+        <p>Select a pothole for its projected trajectory.</p>
       </aside>
     )
   }
   const detected = clusterDetectedAt(pothole)
-  const now = severityAt(pothole, at, { from: detected })
+  const now = severityAt(pothole, at, { from: detected, forecastFrom: origin })
   const points = track(pothole, { origin, back: 0, months: AHEAD_MONTHS })
   const toSevere = monthsToReach(pothole, 70, { origin })
 
-  const W = 260
-  const H = 64
+  const W = 240
+  const H = 46
   const x = (i) => (i / (points.length - 1)) * W
   const y = (v) => H - (v / 100) * H
   const line = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${x(i)} ${y(p.severity)}`).join(' ')
@@ -147,10 +147,12 @@ function Detail({ pothole, at, origin }) {
 
   return (
     <aside className="fdetail" aria-label="Selected pothole">
-      <p className="fdetail__coords">{pothole.lat.toFixed(5)}, {pothole.lon.toFixed(5)}</p>
+      <p className="fdetail__coords">
+        {pothole.street ?? `${pothole.lat.toFixed(4)}, ${pothole.lon.toFixed(4)}`}
+      </p>
       <div className="fdetail__now">
         <strong>{Math.round(now.severity)}</strong>
-        <span>/ 100 on {stamp(at)}{now.known ? ' (observed)' : ' (forecast)'}</span>
+        <span>/ 100 &middot; {now.known ? 'observed' : 'forecast'}</span>
       </div>
 
       <svg viewBox={`0 0 ${W} ${H}`} className="fdetail__spark" role="img"
@@ -160,34 +162,58 @@ function Detail({ pothole, at, origin }) {
         <line className="fdetail__threshold" x1="0" y1={y(70)} x2={W} y2={y(70)} />
       </svg>
       <p className="fdetail__axis">
-        <span>now</span>
-        <span>severe at 70</span>
-        <span>+{AHEAD_MONTHS}m</span>
+        <span>now</span><span>severe 70</span><span>+{AHEAD_MONTHS}m</span>
       </p>
 
       <dl className="fdetail__rows">
-        <div><dt>First detected</dt><dd>{stamp(detected)}</dd></div>
-        <div><dt>Severity when found</dt><dd>{pothole.severity.toFixed(0)}</dd></div>
-        <div><dt>Devices that felt it</dt><dd>{pothole.devices}</dd></div>
+        <div><dt>Found</dt><dd>{stamp(detected)} at {pothole.severity.toFixed(0)}</dd></div>
+        <div><dt>Devices</dt><dd>{pothole.devices}</dd></div>
         <div>
-          <dt>Reaches severe (70)</dt>
-          <dd>{toSevere === 0 ? 'already there' : toSevere == null ? `beyond ${AHEAD_MONTHS} months` : `in ~${toSevere} months`}</dd>
+          <dt>Reaches severe</dt>
+          <dd>{toSevere === 0 ? 'already' : toSevere == null ? `past ${AHEAD_MONTHS}m` : `~${toSevere}m`}</dd>
         </div>
         <div>
-          <dt>Range at {stamp(at)}</dt>
-          <dd>{now.known ? 'observed' : `${Math.round(now.lo)} to ${Math.round(now.hi)}`}</dd>
+          <dt>Range now</dt>
+          <dd>{now.known ? 'observed' : `${Math.round(now.lo)}-${Math.round(now.hi)}`}</dd>
         </div>
       </dl>
-      {!now.known && (
-        <p className="fdetail__note">
-          The band is the p25-p75 spread of how fast Chicago blocks actually deteriorate,
-          a {(model.kFast / model.kSlow).toFixed(1)}x range in rate. The line is the middle of it,
-          not a prediction to bet on.
-        </p>
-      )}
     </aside>
   )
 }
+
+/* --------------------------------- Transport -------------------------------- */
+
+function Transport({ offset, setOffset, playing, setPlaying, at }) {
+  return (
+    <div className="fcast__controls">
+      <div className="fcast__transport">
+        <button type="button" className="btn btn--ghost btn--sm"
+          onClick={() => { setPlaying(false); setOffset(-BACK_MONTHS) }}>
+          <SkipBack size={15} weight="bold" aria-hidden="true" />
+          Start
+        </button>
+        <button type="button" className="btn btn--ghost btn--sm"
+          onClick={() => setPlaying((p) => !p)} aria-pressed={playing}>
+          {playing ? <Pause size={15} weight="bold" aria-hidden="true" />
+            : <Play size={15} weight="bold" aria-hidden="true" />}
+          {playing ? 'Pause' : 'Play'}
+        </button>
+        <p className="fcast__stamp">
+          <strong>{stamp(at)}</strong>
+          <span className={offset > 0 ? 'tag tag--amber' : 'tag'}>
+            {offset > 0 ? 'forecast' : 'observed'}
+          </span>
+        </p>
+      </div>
+      <label className="fcast__slider">
+        <span className="sr-only">Month</span>
+        <input type="range" min={-BACK_MONTHS} max={AHEAD_MONTHS} step={1} value={offset}
+          onChange={(e) => { setPlaying(false); setOffset(Number(e.target.value)) }} />
+      </label>
+    </div>
+  )
+}
+
 
 /* ----------------------------------- Page ---------------------------------- */
 
@@ -201,14 +227,25 @@ export default function Forecast() {
   const [offset, setOffset] = useState(0)
   const [playing, setPlaying] = useState(false)
   const [selectedId, setSelectedId] = useState(null)
+  const [expanded, setExpanded] = useState(false)
   const timer = useRef(null)
 
   const at = useMemo(() => monthsFromNow(origin, offset), [origin, offset])
+  const weather = useMemo(() => precipitationFor(at), [at])
 
   const series = useMemo(
     () => fleetTrack(potholes, { origin, back: BACK_MONTHS, months: AHEAD_MONTHS }),
     [potholes, origin],
   )
+
+  // How much severity the fleet gained this month, so the conditions panel can
+  // put a number on what the weather did rather than only describing it.
+  const monthlyGrowth = useMemo(() => {
+    const i = offset + BACK_MONTHS
+    const prev = series[i - 1]
+    const now = series[i]
+    return prev && now ? now.meanSeverity - prev.meanSeverity : null
+  }, [series, offset])
 
   useEffect(() => {
     if (!playing) return undefined
@@ -218,21 +255,33 @@ export default function Forecast() {
     return () => clearInterval(timer.current)
   }, [playing])
 
+  // Escape closes the expanded window, which is what a keyboard user will try
+  // first and what every other overlay on the web does.
+  useEffect(() => {
+    if (!expanded) return undefined
+    const onKey = (event) => {
+      if (event.key === 'Escape') setExpanded(false)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [expanded])
+
   const current = series[offset + BACK_MONTHS] ?? series[series.length - 1]
   const atNow = series[BACK_MONTHS]
   const atEnd = series[series.length - 1]
   const selected = potholes.find((p) => p.cluster_id === selectedId) ?? null
-  const weather = useMemo(() => precipitationFor(at), [at])
+  const onSelect = useCallback((id) => setSelectedId((prev) => (prev === id ? null : id)), [])
 
-  // How much severity the fleet actually gained this month, so the conditions
-  // panel can put a number on what the weather did rather than only describing it.
-  const monthlyGrowth = useMemo(() => {
-    const i = offset + BACK_MONTHS
-    const prev = series[i - 1]
-    const now = series[i]
-    return prev && now ? now.meanSeverity - prev.meanSeverity : null
-  }, [series, offset])
-  const visible = potholes.filter((p) => clusterDetectedAt(p) <= at).length
+  // One stage, rendered at two sizes. Keeping it a single expression means the
+  // expanded window can never drift out of step with the inline one.
+  const stage = (compact) => (
+    <div className="fcast__canvas">
+      <ForecastMap potholes={potholes} at={at} origin={origin} selectedId={selectedId}
+        onSelect={onSelect} compact={compact} />
+      <WeatherLayer kind={weather.kind} intensity={weather.intensity}
+        freezeThaw={weather.freezeThaw} />
+    </div>
+  )
 
   return (
     <>
@@ -240,104 +289,75 @@ export default function Forecast() {
       <Nav wide />
       <main id="main" className="fcast">
         <div className="wrap wrap--wide">
-          <Link to="/admin" className="login__back">
-            <ArrowLeft size={16} weight="bold" aria-hidden="true" />
-            Back to dashboard
-          </Link>
-
-          <header className="fcast__head">
-            <p className="eyebrow">Forecast</p>
-            <h1>What these roads look like if nobody fills them.</h1>
-            <p className="fcast__lede">
-              Every pothole we have found, projected forward on the assumption that no crew ever
-              arrives. Growth is driven by freeze-thaw: a month of January does about {model.damageIndex[0].toFixed(1)} months
-              of damage and a month of July does almost none, measured from eight years of Chicago
-              weather. Drag the timeline, or press play.
-            </p>
-          </header>
-
-          <div className="banner banner--info" role="note">
-            <WarningCircle size={20} weight="bold" aria-hidden="true" />
-            <p>
-              <strong>Synthetic locations.</strong> This project has no pothole history of its own,
-              so the {potholes.length} locations here were generated. Their <em>timing</em> is real:
-              births follow the freeze-thaw damage index measured from Chicago weather 2011-2018,
-              and each winter is scaled by a freeze-thaw day count drawn from the observed 35-96
-              range. The growth law itself is an assumption -- no published growth rate exists for
-              untreated potholes.
-            </p>
+          <div className="fcast__top">
+            <div className="fcast__title">
+              <Link to="/admin" className="login__back">
+                <ArrowLeft size={15} weight="bold" aria-hidden="true" />
+                Back to dashboard
+              </Link>
+              <h1>What these roads look like if nobody fills them.</h1>
+            </div>
+            <details className="fcast__note">
+              <summary>
+                <Info size={14} weight="bold" aria-hidden="true" />
+                Synthetic locations, real timing
+              </summary>
+              <p>
+                The {potholes.length} potholes sit on real Chicago street centrelines around Union
+                Station, but which streets broke is invented. Their <em>timing</em> is measured:
+                births follow the freeze-thaw damage index from Chicago weather 2011-2018, each
+                winter scaled by a freeze-thaw count drawn from the observed 35-96 range. The
+                growth law is an assumption &mdash; no published growth rate exists for untreated
+                potholes.
+              </p>
+            </details>
           </div>
 
-          <section className="fcast__controls" aria-label="Timeline">
-            <div className="fcast__transport">
-              <button type="button" className="btn btn--ghost btn--sm"
-                onClick={() => { setPlaying(false); setOffset(-BACK_MONTHS) }}>
-                <SkipBack size={16} weight="bold" aria-hidden="true" />
-                Start
-              </button>
-              <button type="button" className="btn btn--ghost btn--sm"
-                onClick={() => setPlaying((p) => !p)} aria-pressed={playing}>
-                {playing ? <Pause size={16} weight="bold" aria-hidden="true" />
-                  : <Play size={16} weight="bold" aria-hidden="true" />}
-                {playing ? 'Pause' : 'Play'}
-              </button>
-              <p className="fcast__stamp">
-                <strong>{stamp(at)}</strong>
-                <span className={offset > 0 ? 'tag tag--amber' : 'tag'}>
-                  {offset > 0 ? 'forecast' : 'observed'}
-                </span>
-              </p>
-            </div>
-
-            <label className="fcast__slider">
-              <span className="sr-only">Month</span>
-              <input type="range" min={-BACK_MONTHS} max={AHEAD_MONTHS} step={1} value={offset}
-                onChange={(e) => { setPlaying(false); setOffset(Number(e.target.value)) }} />
-            </label>
-          </section>
+          <Transport offset={offset} setOffset={setOffset} playing={playing}
+            setPlaying={setPlaying} at={at} />
 
           <dl className="fcast__stats">
-            <div><dt>Potholes found by {stamp(at)}</dt><dd>{visible}</dd></div>
-            <div><dt>Severe now</dt><dd>{atNow?.severe ?? 0}</dd></div>
+            <div><dt>Found by {stamp(at)}</dt><dd>{current?.found ?? 0}</dd></div>
+            <div><dt>Severe today</dt><dd>{atNow?.severe ?? 0}</dd></div>
             <div>
-              <dt>Severe in {AHEAD_MONTHS} months</dt>
+              <dt>Severe in {AHEAD_MONTHS}m</dt>
               <dd>
                 {atEnd?.severe ?? 0}
                 {atNow?.severe > 0 && (
-                  <span className="fcast__lift">
-                    {' '}x{((atEnd?.severe ?? 0) / atNow.severe).toFixed(1)}
-                  </span>
+                  <span className="fcast__lift"> x{((atEnd?.severe ?? 0) / atNow.severe).toFixed(1)}</span>
                 )}
               </dd>
             </div>
-            <div><dt>Mean severity at {stamp(at)}</dt><dd>{(current?.meanSeverity ?? 0).toFixed(0)}</dd></div>
+            <div><dt>Mean severity</dt><dd>{(current?.meanSeverity ?? 0).toFixed(0)}</dd></div>
           </dl>
 
           <Timeline series={series} offset={offset} nowIndex={BACK_MONTHS}
             onScrub={(o) => { setPlaying(false); setOffset(o) }} />
 
-          <Conditions at={at} monthlyGrowth={monthlyGrowth} />
-
           <div className="fcast__grid">
-            <div className="window fcast__stage">
-              <div className="window__bar" aria-hidden="true"><span /><span /><span /></div>
-              <div className="fcast__canvas">
-                <ForecastMap potholes={potholes} at={at} origin={origin} selectedId={selectedId}
-                  onSelect={(id) => setSelectedId((prev) => (prev === id ? null : id))} />
-                <WeatherLayer kind={weather.kind} intensity={weather.intensity}
-                  freezeThaw={weather.freezeThaw} />
+            <section className="window fcast__stage" aria-label="Map of downtown Chicago">
+              <div className="window__bar">
+                <span className="window__dots" aria-hidden="true"><span /><span /><span /></span>
+                <span className="window__title">Downtown Chicago &middot; Union Station</span>
+                <button type="button" className="window__expand" onClick={() => setExpanded(true)}>
+                  <ArrowsOut size={14} weight="bold" aria-hidden="true" />
+                  Expand
+                </button>
               </div>
+              {stage(true)}
               <p className="fcast__legend">
-                Circle size and colour are severity at {stamp(at)}. A faint outer ring is the upper
-                end of the uncertainty band. Potholes appear on the month we first detected them;
-                nothing is drawn before that, because before that we did not know.
+                Real street centrelines. Size and colour are severity at {stamp(at)}.
               </p>
+            </section>
+
+            <div className="fcast__side">
+              <Conditions at={at} monthlyGrowth={monthlyGrowth} />
+              <Detail pothole={selected} at={at} origin={origin} />
             </div>
-            <Detail pothole={selected} at={at} origin={origin} />
           </div>
 
-          <section className="fcast__caveats" aria-labelledby="caveats-title">
-            <h2 id="caveats-title">What this model cannot tell you</h2>
+          <details className="fcast__caveats">
+            <summary>What this model cannot tell you</summary>
             <ul>
               <li>
                 <strong>It forecasts from detection, not from birth.</strong> We know when a phone
@@ -346,7 +366,7 @@ export default function Forecast() {
               <li>
                 <strong>Nothing here is validated against a pothole that was left alone.</strong>
                 {' '}Chicago fills them, at a median of 6 days. The growth law is anchored to the
-                266-day median gap between repeat reports on the same block -- a real Chicago
+                266-day median gap between repeat reports on the same block &mdash; a real Chicago
                 timescale, but not the same quantity.
               </li>
               <li>
@@ -365,10 +385,42 @@ export default function Forecast() {
                 being asked, not a forecast of what will happen.
               </li>
             </ul>
-          </section>
+          </details>
         </div>
       </main>
-      <Footer wide />
+
+      {expanded && (
+        <div className="fexp" role="dialog" aria-modal="true" aria-label="Map, expanded">
+          <button type="button" className="fexp__scrim" onClick={() => setExpanded(false)}
+            aria-label="Close the expanded map" tabIndex={-1} />
+          <div className="fexp__sheet">
+            <header className="fexp__bar">
+              <span className="fexp__title">
+                Downtown Chicago &middot; Union Station
+                <span className="fexp__when">{stamp(at)}</span>
+              </span>
+              <button type="button" className="btn btn--ghost btn--sm"
+                onClick={() => setExpanded(false)}>
+                <ArrowsIn size={15} weight="bold" aria-hidden="true" />
+                Collapse
+              </button>
+              <button type="button" className="fexp__close" onClick={() => setExpanded(false)}
+                aria-label="Close the expanded map">
+                <X size={16} weight="bold" aria-hidden="true" />
+              </button>
+            </header>
+            <div className="fexp__body">
+              {stage(false)}
+              <div className="fexp__side">
+                <Transport offset={offset} setOffset={setOffset} playing={playing}
+                  setPlaying={setPlaying} at={at} />
+                <Conditions at={at} monthlyGrowth={monthlyGrowth} />
+                <Detail pothole={selected} at={at} origin={origin} />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   )
 }

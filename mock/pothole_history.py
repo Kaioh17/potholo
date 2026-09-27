@@ -34,19 +34,18 @@ ROOT = Path(__file__).resolve().parents[1]
 CALIBRATION = ROOT / "web" / "src" / "forecast" / "calibration.js"
 OUT = ROOT / "web" / "src" / "forecast" / "history.js"
 
-# Chicago, bounded to roughly the city proper. Potholes are placed on a street
-# grid rather than uniformly at random: real ones sit on roads, and a cloud of
-# uniform noise looks obviously fake the moment it is drawn on a map.
-LAT0, LON0 = 41.8781, -87.6298
-LAT_SPAN, LON_SPAN = 0.14, 0.10
-BLOCK_DEG = 0.0025  # ~280 m, close to a Chicago block
+STREETS = ROOT / "web" / "src" / "forecast" / "streets.js"
 
-# Arterials carry more load and get salted harder, so they break more often.
-# The share is a modelling choice, not a measurement -- Q4 of the study found no
-# usable traffic signal in the 311 data, so this is here to make the map look
-# like a city, and the forecaster does not read it.
-ARTERIAL_EVERY = 4
-ARTERIAL_WEIGHT = 2.2
+# Potholes are placed on real Chicago street centrelines around Union Station,
+# not scattered at random: a hole sits on a road, and a cloud of uniform noise
+# stops looking like a city the moment it is drawn on one.
+#
+# Chicago's street class: 1 expressway, 2 arterial, 3 collector, 4 local. Busier
+# roads get proportionally more holes. That weighting is a presentation choice
+# and the forecaster never reads it -- Q4 of the study found no usable traffic
+# signal in the 311 data, so a weight here would be unsupported if the model
+# leaned on it. It is here so the map looks like a city, and nothing more.
+CLASS_WEIGHT = {1: 0.6, 2: 3.0, 3: 2.0, 4: 1.0}
 
 
 def load_damage_index() -> tuple[list[float], dict]:
@@ -58,19 +57,48 @@ def load_damage_index() -> tuple[list[float], dict]:
     return [index[m] for m in months], payload
 
 
-def snap_to_grid(lat: float, lon: float) -> tuple[float, float, bool]:
-    """Put a point on the nearest street, and say whether that street is an arterial."""
-    row = round((lat - LAT0) / BLOCK_DEG)
-    col = round((lon - LON0) / BLOCK_DEG)
-    # Snap to whichever of the two axes is nearer, so points land *along* a
-    # street rather than only at intersections.
-    lat_snapped = LAT0 + row * BLOCK_DEG
-    lon_snapped = LON0 + col * BLOCK_DEG
-    if abs(lat - lat_snapped) < abs(lon - lon_snapped):
-        lat, arterial = lat_snapped, row % ARTERIAL_EVERY == 0
-    else:
-        lon, arterial = lon_snapped, col % ARTERIAL_EVERY == 0
-    return lat, lon, arterial
+def load_streets() -> list[dict]:
+    """Read the street centrelines the map draws, so holes land on them."""
+    text = STREETS.read_text(encoding="utf-8")
+    payload = json.loads(text[text.index("{") :].rstrip().rstrip(";"))
+    return payload["streets"]
+
+
+def build_placements(streets: list[dict]) -> tuple[list[tuple], list[float]]:
+    """Every drawable span of street, with a weight for how often it breaks.
+
+    Weighting by length as well as class matters: sampling segments uniformly
+    would pile potholes onto short stubs near intersections, because a 20 m
+    connector would draw as often as a 300 m block.
+    """
+    spans: list[tuple] = []
+    weights: list[float] = []
+    for street in streets:
+        points = street["p"]
+        klass = street["c"]
+        for (lon_a, lat_a), (lon_b, lat_b) in zip(points, points[1:]):
+            # Rough metres; good enough to weight by, at this latitude.
+            dx = (lon_b - lon_a) * 82_700
+            dy = (lat_b - lat_a) * 111_320
+            length = math.hypot(dx, dy)
+            if length < 1:
+                continue
+            spans.append((lon_a, lat_a, lon_b, lat_b, street["n"], klass))
+            weights.append(length * CLASS_WEIGHT.get(klass, 1.0))
+    return spans, weights
+
+
+def sample_on_street(rng: random.Random, spans, weights) -> tuple[float, float, str, bool]:
+    """A point somewhere along a real street, and which street it was."""
+    lon_a, lat_a, lon_b, lat_b, name, klass = rng.choices(spans, weights=weights, k=1)[0]
+    t = rng.random()
+    lon = lon_a + (lon_b - lon_a) * t
+    lat = lat_a + (lat_b - lat_a) * t
+    # A little jitter across the carriageway, so holes are not all on the
+    # centreline. About 4 m, which is roughly a lane.
+    lat += rng.gauss(0, 0.000035)
+    lon += rng.gauss(0, 0.000045)
+    return lat, lon, name, klass in (1, 2)
 
 
 def winter_strength(rng: random.Random, calibration: dict) -> dict[int, float]:
@@ -89,6 +117,7 @@ def winter_strength(rng: random.Random, calibration: dict) -> dict[int, float]:
 def generate(years: int, count: int, seed: int) -> dict:
     rng = random.Random(seed)
     damage, calibration = load_damage_index()
+    spans, span_weights = build_placements(load_streets())
     ft = winter_strength(rng, calibration)
 
     now = datetime.now(timezone.utc).replace(hour=12, minute=0, second=0, microsecond=0)
@@ -128,9 +157,7 @@ def generate(years: int, count: int, seed: int) -> dict:
         if born > now:
             born = now - timedelta(hours=rng.uniform(1, 72))
 
-        lat = LAT0 + rng.uniform(-LAT_SPAN / 2, LAT_SPAN / 2)
-        lon = LON0 + rng.uniform(-LON_SPAN / 2, LON_SPAN / 2)
-        lat, lon, arterial = snap_to_grid(lat, lon)
+        lat, lon, street, arterial = sample_on_street(rng, spans, span_weights)
 
         # Severity at first detection. Our detector picks a hole up once it is
         # big enough to register on an accelerometer, so the distribution starts
@@ -165,6 +192,7 @@ def generate(years: int, count: int, seed: int) -> dict:
                 "status": status,
                 "first_seen": born.isoformat().replace("+00:00", "Z"),
                 "last_seen": now.isoformat().replace("+00:00", "Z"),
+                "street": street,
                 "arterial": arterial,
                 "synthetic": True,
             }
@@ -182,7 +210,8 @@ def generate(years: int, count: int, seed: int) -> dict:
         "seed": seed,
         "years": years,
         "note": (
-            "Locations are synthetic. Timing is driven by the freeze-thaw damage index "
+            "Locations are synthetic but sit on real Chicago street centrelines around "
+            "Union Station. Timing is driven by the freeze-thaw damage index "
             "measured from Chicago weather 2011-2018, with each winter scaled by a "
             "freeze-thaw day count drawn from the real 35-96 range. Not a measurement."
         ),
@@ -203,6 +232,11 @@ def main() -> None:
     data = generate(args.years, args.count, args.seed)
 
     print(f"{len(data['potholes'])} synthetic potholes over {args.years} years")
+    on_arterial = sum(1 for p in data["potholes"] if p["arterial"])
+    print(f"on arterials: {on_arterial} ({on_arterial/len(data['potholes']):.0%})")
+    from collections import Counter
+    top = Counter(p["street"] for p in data["potholes"]).most_common(6)
+    print("busiest streets:", ", ".join(f"{n} ({c})" for n, c in top))
     print("\nwinter severity multipliers (1.00 = an average Chicago winter):")
     for season, scale in data["season_scale"].items():
         print(f"  {int(season)-1}-{season}   x{scale:.2f}")
