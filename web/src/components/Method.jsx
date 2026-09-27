@@ -70,8 +70,8 @@ export default function Method() {
   const reopen = c.reopen
 
   return (
-    <section className="method" aria-labelledby="method-title">
-      <h2 id="method-title">What it does tell you, and how we calculated it</h2>
+    <details className="method">
+      <summary>What it does tell you, and how we calculated it</summary>
       <p className="method__lede">
         Every figure below is read straight out of the generated calibration, so this page and the
         model cannot disagree. Re-run <code>data/analysis/calibrate_model.py</code> and these
@@ -216,6 +216,6 @@ k = ${fmt(pop.logit_span, 4)} / ${fmt(anchor.over_months, 2)}              = ${f
           and solid, the rate is anchored but assumed, and traffic was tested and thrown out.
         </li>
       </ul>
-    </section>
+    </details>
   )
 }

@@ -278,7 +278,7 @@ export default function Forecast() {
   const stage = (compact) => (
     <div className="fcast__canvas">
       <ForecastMap potholes={potholes} at={at} origin={origin} selectedId={selectedId}
-        onSelect={onSelect} compact={compact} />
+        onSelect={onSelect} compact={compact} weather={weather} />
       <WeatherLayer kind={weather.kind} intensity={weather.intensity}
         freezeThaw={weather.freezeThaw} />
     </div>
@@ -347,7 +347,8 @@ export default function Forecast() {
               </div>
               {stage(true)}
               <p className="fcast__legend">
-                Real street centrelines. Size and colour are severity at {stamp(at)}.
+                OpenStreetMap basemap. Radar is that month&apos;s real precipitation, drifting west
+                to east; size and colour are severity at {stamp(at)}.
               </p>
             </section>
 

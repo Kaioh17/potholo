@@ -222,11 +222,36 @@ choice; the *timing* is not, which is why the band is wide and prominent.
 
 ## The map
 
-The forecast map draws **real Chicago street centrelines** from the city's own
-open data (Socrata `pr57-gg9e`), for a 930 m by 3.2 km strip running from
-Halsted across the river into the Loop, with Union Station near its centre. 551
-segments and 72 named streets, drawn at four stroke weights by street class so
-the arterials read as arterials.
+The basemap is **OpenStreetMap**, served from `tile.openstreetmap.org` and
+desaturated to sit inside the site's warm monochrome. The tiles are drawn
+*inside* the SVG rather than beneath it, so the map, the pins, the radar and the
+falling weather share one coordinate system, and the projection is true Web
+Mercator so a pin cannot drift off its street.
+
+Carto's free basemap endpoint was tried first and rejected: it returns an
+identical 2,049-byte placeholder for every style, zoom and tile, watermark
+included. It wants an account now. OSM's own tile policy asks for attribution
+and rules out bulk use -- two dozen tiles on a demo page is within it, but a
+deployed product should move to a paid provider or self-host.
+
+The city's **street centrelines** (Socrata `pr57-gg9e`) are kept as an offline
+fallback: 551 segments and 72 named streets over a 930 m by 3.2 km strip from
+Halsted across the river into the Loop, drawn at four stroke weights by class.
+If the tile server is slow or blocked at demo time the map still shows real
+streets rather than an empty rectangle.
+
+### Weather radar
+
+Precipitation is drawn as a radar sweep: soft cells in the familiar radar ramp
+(cold blues for snow), blurred, drifting **west to east** as the timeline
+advances, because that is the direction Chicago's weather actually arrives from.
+Cells are laid out once from a seeded generator and indexed by absolute month,
+so a given month always shows the same pattern and scrubbing back and forth is
+stable.
+
+Intensity is that month's real precipitation, which is what makes the mechanism
+legible: scrub to June and the heaviest rain the radar can draw falls on a fleet
+of potholes that does not move, because nothing crossed zero.
 
 The synthetic potholes are placed **on** those segments rather than scattered
 near them, sampled by segment length and weighted by class — so a pin on Canal

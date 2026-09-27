@@ -816,15 +816,25 @@
 
 .method {
   margin-top: 12px;
-  padding: 24px;
+  padding: 12px 16px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-card);
 }
 
-.method h2 {
-  margin: 0 0 6px;
-  font-size: 1.25rem;
+.method > summary {
+  font-weight: 700;
+  font-size: 0.9375rem;
+  cursor: pointer;
+}
+
+.method[open] {
+  padding: 20px 24px;
+}
+
+.method[open] > summary {
+  margin-bottom: 10px;
+  font-size: 1.125rem;
   letter-spacing: -0.01em;
 }
 
@@ -1012,4 +1022,56 @@
 @media (max-width: 860px) {
   .method__sources li { grid-template-columns: minmax(0, 1fr); gap: 4px; }
   .method { padding: 16px; }
+}
+
+/* OpenStreetMap tiles ---------------------------------------------------- */
+
+/* Standard OSM styling is considerably more colourful than the rest of this
+   site. Desaturating it pulls the basemap back towards the warm monochrome the
+   design uses, and keeps the pins and the radar as the subject -- the map is
+   context, not content. Street labels stay perfectly legible. */
+.fmap__tiles image {
+  opacity: 0.9;
+  filter: saturate(0.3) contrast(0.92) brightness(1.04);
+}
+
+.fmap__credit {
+  fill: var(--muted);
+  font: 500 8px var(--font-body);
+  text-anchor: end;
+  paint-order: stroke;
+  stroke: rgba(255, 255, 255, 0.85);
+  stroke-width: 2.5;
+}
+
+/* Over real tiles the bare scale bar and label lose contrast, so both sit on
+   a plate. */
+.fmap__scale-bg {
+  fill: rgba(255, 255, 255, 0.82);
+}
+
+.fmap__landmark-box {
+  fill: var(--surface);
+  stroke: var(--ink);
+  stroke-width: 1.5;
+}
+
+/* Radar ------------------------------------------------------------------ */
+
+/* The one place on the site that leaves the monochrome palette: a radar that
+   is not radar-coloured stops reading as a radar. Multiply keeps the street
+   grid legible straight through the precipitation, the way a TV radar keeps
+   its county lines. Saturation is pushed back up because the basemap beneath
+   it has been desaturated, and without this the cells sink into the map. */
+.radar {
+  pointer-events: none;
+  mix-blend-mode: multiply;
+  filter: saturate(1.35);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .radar {
+    /* The cells still show where the weather is; they simply stop sweeping. */
+    opacity: 0.8;
+  }
 }
