@@ -18,11 +18,12 @@ from app.database import SessionDep
 from app.detection import severity as sev
 from app.detection.locate import metres_between
 from app.devices import as_utc, device_out, device_rows
+from app.insights import gather_fleet_stats, summarise_fleet
 from app.models.detection import PotholeCluster
 from app.pipeline import process_batch
 from app.reporting import chicago311
 from app.repository import list_clusters, store_batch
-from app.schemas import BatchResult, ClusterOut, DeviceOut, SensorBatch
+from app.schemas import BatchResult, ClusterOut, DeviceOut, SensorBatch, SummaryOut, SummarySectionOut
 
 router = APIRouter(prefix="/v1", tags=["detection"])
 
@@ -84,6 +85,19 @@ def clusters(
 def devices(session: SessionDep) -> list[DeviceOut]:
     """Every phone that has uploaded, most recently seen first."""
     return [device_out(r) for r in device_rows(session)]
+
+
+@router.get("/fleet/summary", response_model=SummaryOut)
+def fleet_summary(session: SessionDep) -> SummaryOut:
+    """A structured, plain-language summary of what the whole fleet has
+    found, for the admin dashboard."""
+    stats = gather_fleet_stats(session)
+    result = summarise_fleet(stats, settings.claude_api_key, settings.claude_model)
+    return SummaryOut(
+        overview=result.overview,
+        sections=[SummarySectionOut(**vars(s)) for s in result.sections],
+        written_by_claude=result.written_by_claude,
+    )
 
 
 class ReportRequest(BaseModel):

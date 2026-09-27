@@ -101,3 +101,41 @@ def test_joined_time_carries_a_utc_marker_on_every_route(client):
     fetched = client.get(f"/v1/users/{user['user_id']}").json()
     assert user["joined"].endswith("Z")
     assert fetched["joined"].endswith("Z")
+
+
+def test_unknown_user_summary_is_404(client):
+    assert client.get(f"/v1/users/{uuid.uuid4()}/summary").status_code == 404
+
+
+def test_summary_before_any_upload_says_so_without_calling_claude(client, monkeypatch):
+    from app.config import settings
+
+    monkeypatch.setattr(settings, "claude_api_key", None)
+    user = join(client, unique()).json()
+
+    res = client.get(f"/v1/users/{user['user_id']}/summary")
+    assert res.status_code == 200
+    body = res.json()
+    assert body["written_by_claude"] is False
+    assert "No potholes found yet" in body["overview"]
+    assert body["sections"] == []
+
+
+def test_summary_falls_back_to_deterministic_text_without_an_api_key(client, monkeypatch):
+    from app.config import settings
+
+    monkeypatch.setattr(settings, "claude_api_key", None)
+    user = join(client, unique()).json()
+
+    raw = build_batch(
+        device_id=user["device_id"], duration_s=40, fs=100.0, speed=11.0, potholes=[15.0], seed=3
+    )
+    body = {k: v for k, v in raw.items() if not k.startswith("_")}
+    assert client.post("/v1/batches", json=body).status_code == 200
+
+    res = client.get(f"/v1/users/{user['user_id']}/summary")
+    assert res.status_code == 200
+    summary = res.json()
+    assert summary["written_by_claude"] is False
+    assert "pothole hit" in summary["overview"]
+    assert any(section["key"] == "advice" for section in summary["sections"])

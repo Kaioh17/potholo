@@ -182,3 +182,24 @@ class UserView(UserOut):
     device: DeviceOut | None = Field(
         None, description="Null until the phone has uploaded its first batch."
     )
+
+
+class SummarySectionOut(BaseModel):
+    """Advice scoped to one topic, e.g. what other drivers confirmed, or one
+    location status such as confirmed but not reported."""
+
+    key: str
+    title: str
+    body: str
+
+
+class SummaryOut(BaseModel):
+    """A structured, plain-language readout of what one phone, or the whole
+    fleet, has found: an overview, plus one section per topic that has
+    anything to say."""
+
+    overview: str
+    sections: list[SummarySectionOut]
+    written_by_claude: bool = Field(
+        ..., description="False for the deterministic fallback text."
+    )

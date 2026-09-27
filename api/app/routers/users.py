@@ -11,9 +11,11 @@ import uuid
 from fastapi import APIRouter, HTTPException
 
 from app import users
+from app.config import settings
 from app.database import SessionDep
-from app.phones import PHONES
-from app.schemas import JoinRequest, PhoneOut, UserOut, UserView
+from app.insights import gather_stats, summarise
+from app.phones import PHONES, find_phone
+from app.schemas import JoinRequest, PhoneOut, SummaryOut, SummarySectionOut, UserOut, UserView
 
 router = APIRouter(prefix="/v1", tags=["users"])
 
@@ -41,3 +43,22 @@ def user(user_id: uuid.UUID, session: SessionDep) -> UserView:
     if found is None:
         raise HTTPException(404, "unknown user")
     return users.to_view(session, found)
+
+
+@router.get("/users/{user_id}/summary", response_model=SummaryOut)
+def user_summary(user_id: uuid.UUID, session: SessionDep) -> SummaryOut:
+    """A structured, plain-language summary of what this user's phone has
+    found, and whether it looks like something worth having checked out."""
+    found = users.get_user(session, user_id)
+    if found is None:
+        raise HTTPException(404, "unknown user")
+
+    phone = find_phone(found.phone_model)
+    label = phone.label if phone else found.phone_model
+    stats = gather_stats(session, found.device_id)
+    result = summarise(stats, label, settings.claude_api_key, settings.claude_model)
+    return SummaryOut(
+        overview=result.overview,
+        sections=[SummarySectionOut(**vars(s)) for s in result.sections],
+        written_by_claude=result.written_by_claude,
+    )

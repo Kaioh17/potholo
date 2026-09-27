@@ -39,6 +39,12 @@ class Settings(BaseSettings):
     # Read as CHI311_API_KEY, without the POTHOLO_ prefix.
     chi311_api_key: str | None = Field(default=None, validation_alias="CHI311_API_KEY")
 
+    # Claude API key, for the plain-language summary on the Try page. Without it
+    # a user still gets a summary, just the deterministic fallback text instead
+    # of a written one. Read as CLAUDE_API_KEY, without the POTHOLO_ prefix.
+    claude_api_key: str | None = Field(default=None, validation_alias="CLAUDE_API_KEY")
+    claude_model: str = "claude-sonnet-5"
+
     # Origins allowed to call the API from a browser. In production set
     # POTHOLO_CORS_ORIGINS='["https://potholo.usemaison.io"]'.
     cors_origins: list[str] = ["http://localhost:8840", "http://127.0.0.1:8840"]
