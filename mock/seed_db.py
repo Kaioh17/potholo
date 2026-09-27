@@ -31,9 +31,8 @@ from scenarios import (  # noqa: E402
     CATALOGUE,
     CORRIDOR_CLEAN_TRIPS,
     CORRIDOR_FLEET,
-    CORRIDOR_LAT,
     CORRIDOR_LENGTH_M,
-    CORRIDOR_LON,
+    CORRIDOR_ROUTE,
     CORRIDOR_POTHOLES,
 )
 from vehicles import FLEET  # noqa: E402
@@ -89,8 +88,7 @@ def run_catalogue(session) -> list[ScenarioRun]:
             gps_accuracy=sc.gps_accuracy,
             gps_dropout=sc.gps_dropout,
             seed=1000 + index,
-            start_lat=lat,
-            start_lon=lon,
+            route=sc.route(index),
         )
         batch = to_batch(raw)
         result = process_batch(batch)
@@ -172,8 +170,7 @@ def run_corridor(session) -> None:
             vehicle=vehicle,
             events=events,
             seed=2000 + k,
-            start_lat=CORRIDOR_LAT,
-            start_lon=CORRIDOR_LON,
+            route=CORRIDOR_ROUTE,
         )
         batch = to_batch(raw)
         result = process_batch(batch)
@@ -195,8 +192,7 @@ def run_corridor(session) -> None:
             speed=11.0,
             events=[],
             seed=3000 + k,
-            start_lat=CORRIDOR_LAT,
-            start_lon=CORRIDOR_LON,
+            route=CORRIDOR_ROUTE,
         )
         batch = to_batch(raw)
         result = process_batch(batch)

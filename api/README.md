@@ -18,10 +18,14 @@ The maths is documented in `../docs/detection-model.md`.
 | `GET /v1/users/{id}` | a user, with the upload health and detections of their phone |
 | `GET /v1/devices` | every phone that has uploaded, with its upload health and what it found |
 | `GET /v1/clusters` | cross-checked pothole locations, best evidence first |
+| `GET /v1/geocode/reverse?lat=&lon=` | the street nearest a point, for the map's hover label |
 | `POST /v1/clusters/{id}/report` | prepare a CDOT Open311 request for a confirmed cluster |
 
 `GET /v1/clusters` takes `status` (`candidate`, `confirmed`, `reported`) and
-`min_confidence`. `POST /v1/batches` takes an optional `z_threshold` override.
+`min_confidence`. `GET /v1/geocode/reverse` uses OpenStreetMap's free Nominatim, with no
+key. It sends at most one request a second and caches results, per Nominatim's usage
+policy. Set `POTHOLO_GEOCODER_USER_AGENT` to something that says how to reach you.
+`POST /v1/batches` takes an optional `z_threshold` override.
 
 Reporting is a **dry run by default**: it targets the City's test endpoint,
 needs `CHI311_API_KEY` set and `confirm=true` to send anything at all, and

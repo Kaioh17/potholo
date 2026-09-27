@@ -553,19 +553,16 @@
    map, so the pins follow clusterStatus() from status.js. Scoped to .admin:
    the standalone /map page has its own legend and keeps its own colours. */
 
-.admin .cmap__pin--candidate .cmap__dot {
-  fill: var(--amber-pale);
-  stroke: var(--amber-ink);
+.admin .cmap__pin--candidate {
+  background: var(--amber-pale);
 }
 
-.admin .cmap__pin--confirmed .cmap__dot {
-  fill: var(--green-pale);
-  stroke: var(--green-ink);
+.admin .cmap__pin--confirmed {
+  background: var(--green-pale);
 }
 
-.admin .cmap__pin--reported .cmap__dot {
-  fill: var(--blue-pale);
-  stroke: var(--blue-ink);
+.admin .cmap__pin--reported {
+  background: var(--blue-pale);
 }
 
 /* Ties a selected row to its pin: both carry the same amber wash. */

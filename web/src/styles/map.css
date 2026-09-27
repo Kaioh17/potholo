@@ -141,101 +141,92 @@
 
 .cmap {
   width: 100%;
-  height: auto;
+  height: clamp(420px, 62vh, 640px);
   border-radius: 8px;
+  background: #f5f4f1;
+  font-family: var(--font-body);
+  z-index: 0;
 }
 
-.cmap__bg {
-  fill: var(--surface-alt);
+.cmap .maplibregl-ctrl-group {
+  border: 1px solid var(--border);
+  box-shadow: none;
 }
 
-.cmap__grid line {
-  stroke: var(--border);
-  stroke-width: 1;
-}
-
-.cmap__north line,
-.cmap__north path {
-  stroke: var(--muted);
-  fill: var(--muted);
-  stroke-width: 1.5;
-}
-
-.cmap__north text {
-  fill: var(--muted);
-  font: 700 12px var(--font-mono);
-  text-anchor: middle;
-}
-
-.cmap__scale line {
-  stroke: var(--ink-soft);
-  stroke-width: 1.5;
-}
-
-.cmap__scale text {
-  fill: var(--muted);
-  font: 500 12px var(--font-mono);
+.cmap .maplibregl-ctrl-attrib {
+  font-size: 0.6875rem;
 }
 
 .cmap__pin {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  color: var(--ink);
+  font: 600 12px var(--font-mono);
+  padding: 0;
   cursor: pointer;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35);
+  transition: box-shadow 180ms var(--ease);
 }
 
-.cmap__spread {
-  fill: none;
-  stroke: var(--muted);
-  stroke-width: 1;
-  stroke-dasharray: 4 4;
-  opacity: 0.5;
+.cmap__pin:hover {
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5), 0 0 0 5px rgba(255, 255, 255, 0.7);
 }
 
-.cmap__halo {
-  fill: var(--ink);
-  opacity: 0;
-  transition: opacity 180ms var(--ease);
-}
-
-.cmap__pin:hover .cmap__halo,
-.cmap__pin:focus-visible .cmap__halo {
-  opacity: 0.08;
+.cmap__pin.is-selected {
+  box-shadow: 0 0 0 2px var(--ink), 0 0 0 5px rgba(255, 255, 255, 0.9);
 }
 
 .cmap__pin:focus-visible {
   outline: none;
+  box-shadow: 0 0 0 2px var(--ink), 0 0 0 5px rgba(255, 255, 255, 0.9);
 }
 
-.cmap__pin:focus-visible .cmap__ring,
-.cmap__ring {
-  fill: none;
-  stroke: var(--ink);
-  stroke-width: 2;
+.cmap__pin--confirmed {
+  background: var(--amber);
 }
 
-.cmap__dot {
-  stroke-width: 1.5;
-  transition: stroke-width 180ms var(--ease);
+.cmap__pin--candidate {
+  background: var(--surface);
 }
 
-.cmap__pin--confirmed .cmap__dot {
-  fill: var(--amber);
-  stroke: var(--amber-ink);
+.cmap__pin--reported {
+  background: var(--green-pale);
 }
 
-.cmap__pin--candidate .cmap__dot {
-  fill: var(--surface);
-  stroke: #c9c8c4;
+/* Address tooltip on a pin. Flat, 1px border, no shadow. */
+
+.cmap__tip {
+  z-index: 5;
 }
 
-.cmap__pin--reported .cmap__dot {
-  fill: var(--green-pale);
-  stroke: var(--green-ink);
-}
-
-.cmap__label {
-  fill: var(--ink);
-  font: 600 12px var(--font-mono);
-  text-anchor: middle;
+.cmap__tip .maplibregl-popup-content {
+  padding: 10px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: none;
   pointer-events: none;
+}
+
+.cmap__tip .maplibregl-popup-tip {
+  display: none;
+}
+
+.cmap__tip strong {
+  display: block;
+  color: var(--ink);
+  font: 500 0.875rem/1.35 var(--font-body);
+}
+
+.cmap__tip span {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted);
+  font: 400 0.75rem/1.4 var(--font-mono);
 }
 
 /* Detail panel --------------------------------------------------------- */
@@ -505,8 +496,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .chip,
-  .cmap__halo,
-  .cmap__dot {
+  .cmap__pin {
     transition: none;
   }
 }

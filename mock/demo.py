@@ -16,9 +16,11 @@ import urllib.error
 import urllib.request
 
 from phone import build_batch
+from streets import Route
 
 API = "http://127.0.0.1:8000"
-LAT, LON = 41.8781, -87.6298
+# Jackson Boulevard, ending near Dearborn Street.
+ROUTE = Route("Jackson Boulevard", 3000.0)
 POTHOLE_AT_S = 20.0
 RULE = "-" * 74
 
@@ -51,8 +53,7 @@ def main(vehicles: int, clean: int) -> None:
             potholes=[POTHOLE_AT_S],
             depth_m=0.08,
             seed=100 + k,
-            start_lat=LAT,
-            start_lon=LON,
+            route=ROUTE,
         )
         body = {k2: v for k2, v in raw.items() if not k2.startswith("_")}
         res = post("/v1/batches", body)
@@ -79,8 +80,7 @@ def main(vehicles: int, clean: int) -> None:
                 speed=11.0,
                 potholes=[],
                 seed=500 + k,
-                start_lat=LAT,
-                start_lon=LON,
+                route=ROUTE,
             )
             post(
                 "/v1/batches",

@@ -224,6 +224,7 @@ def simulate(
     start_lat: float = 41.8781,
     start_lon: float = -87.6298,
     heading_deg: float = 90.0,
+    route=None,
     scale_error: float = 0.96,
     vehicle: Vehicle = SEDAN,
     events: list[RoadEvent] | None = None,
@@ -329,16 +330,24 @@ def simulate(
         if gps_dropout and gps_dropout[0] <= k <= gps_dropout[1]:
             continue
         d = float(distance[min(int(k * hi), len(distance) - 1)])
+        if route is not None:
+            # Follow a real street polyline (see streets.py) instead of a
+            # straight line from the start point.
+            lat, lon, heading = route.point_at(d)
+        else:
+            lat = start_lat + (d * math.cos(hdg)) / 111_320.0
+            lon = start_lon + (d * math.sin(hdg)) / (111_320.0 * cos_lat)
+            heading = heading_deg
         gps.append(
             {
                 "t": float(k),
-                "lat": start_lat + (d * math.cos(hdg)) / 111_320.0,
-                "lon": start_lon + (d * math.sin(hdg)) / (111_320.0 * cos_lat),
+                "lat": lat,
+                "lon": lon,
                 "speed": float(
                     max(0.0, speed_hi[min(int(k * hi), n_hi - 1)] + rng.normal(0, 0.3))
                 ),
                 "accuracy": gps_accuracy,
-                "heading": heading_deg,
+                "heading": heading,
             }
         )
     return imu, gps, truth

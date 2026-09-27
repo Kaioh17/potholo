@@ -374,9 +374,8 @@ export default function MapPage() {
                     )}
                   </div>
                   <p className="mapp__legend">
-                    Circle size is severity. Amber is confirmed, outline is a candidate. The faint
-                    ring is how far apart the individual detections were. Positions are plotted on a
-                    coordinate grid; there is no street basemap yet.
+                    Circle size is severity. Amber is confirmed, outline is a candidate. The dashed
+                    ring is how far apart the individual detections were.
                   </p>
                 </div>
                 <Detail cluster={selected} />

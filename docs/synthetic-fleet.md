@@ -98,8 +98,10 @@ converted to a time per vehicle.
 
 ## The catalogue
 
-31 scenarios in `mock/scenarios.py`, laid out on separate streets so one case's
-cluster cannot contaminate another's. Current state: **27 of 27 scored cases
+31 scenarios in `mock/scenarios.py`, each driven along its own stretch of a real
+West Loop street so one case's cluster cannot contaminate another's.
+The street lines come from OpenStreetMap (`mock/streets.json`, refreshed with
+`scripts/fetch_streets.py`), so the pins on the admin map sit on real roads. Current state: **27 of 27 scored cases
 pass**, 4 recorded without an asserted answer.
 
 | category | covers |

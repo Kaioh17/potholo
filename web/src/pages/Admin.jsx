@@ -479,7 +479,7 @@ function ClusterList({ clusters, now }) {
           <p className="clustermap__note">
             {selected
               ? `Selected ${selected.lat.toFixed(5)}, ${selected.lon.toFixed(5)} — severity ${selected.severity.toFixed(0)} of 100, found by ${selected.devices} device${selected.devices === 1 ? '' : 's'}.`
-              : 'Select a row or a pin to tie the two together. Circle size is severity; the dashed ring is how far apart that location’s own detections were. Positions sit on a coordinate grid — there is no street basemap yet.'}
+              : 'Select a row or a pin to tie the two together. Circle size is severity; the dashed ring is how far apart that location’s own detections were.'}
           </p>
         </figure>
       )}

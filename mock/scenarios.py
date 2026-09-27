@@ -19,10 +19,9 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from phone import DriverAction, RoadEvent
+from streets import STREET_NAMES, Route, route_for
 from vehicles import BUS, SEDAN, SEMI, SUV, Vehicle
 
-BASE_LAT, BASE_LON = 41.8781, -87.6298
-STREET_SPACING_DEG = 0.0025  # ~280 m between scenarios
 
 
 @dataclass
@@ -43,8 +42,13 @@ class Scenario:
     expect_potholes: int | None = 0
     why: str = ""
 
+    def route(self, index: int) -> Route:
+        """A stretch of real street no other scenario drives on."""
+        return route_for(index % len(STREET_NAMES), index // len(STREET_NAMES))
+
     def location(self, index: int) -> tuple[float, float]:
-        return BASE_LAT + index * STREET_SPACING_DEG, BASE_LON
+        lat, lon, _ = self.route(index).point_at(0.0)
+        return lat, lon
 
 
 def _hole(t: float = 20.0, depth: float = 0.08, length: float = 0.60) -> RoadEvent:
@@ -374,5 +378,5 @@ CORRIDOR_FLEET = [
 ]
 
 CORRIDOR_CLEAN_TRIPS = 6  # vehicles that drive the corridor and hit nothing
-CORRIDOR_LAT = BASE_LAT - 0.004
-CORRIDOR_LON = BASE_LON
+# Lake Street, on a stretch the fleet and the scenarios do not use.
+CORRIDOR_ROUTE = route_for(8, 2)

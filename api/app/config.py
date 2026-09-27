@@ -13,5 +13,12 @@ class Settings(BaseSettings):
     # silently used two different database files.
     database_url: str = f"sqlite:///{API_DIR / 'potholo.db'}"
 
+    # Reverse geocoding for the pothole map. Nominatim is free and needs no key,
+    # but its usage policy asks for an identifying User-Agent, at most one request
+    # a second and caching. Set POTHOLO_GEOCODER_USER_AGENT to something that says
+    # how to reach you, and POTHOLO_GEOCODER_URL to point at your own instance.
+    geocoder_url: str = "https://nominatim.openstreetmap.org/reverse"
+    geocoder_user_agent: str = "Potholo/0.1 (prototype)"
+
 
 settings = Settings()

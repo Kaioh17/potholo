@@ -17,12 +17,11 @@ import json
 import urllib.request
 
 from phone import build_batch
+from streets import route_for
 
 API = "http://127.0.0.1:8000"
-LAT, LON = 41.8781, -87.6298
-BLOCK = 0.004  # degrees of latitude between streets, about 450 m
 
-# (device, street, potholes at t seconds, IMU rate Hz, pothole depth m)
+# (device, street number, potholes at t seconds, IMU rate Hz, pothole depth m)
 FLEET = [
     ("pixel-8-a41f", 0, [20.0], 100.0, 0.09),
     ("galaxy-s23-7c02", 0, [20.0], 100.0, 0.08),
@@ -61,8 +60,7 @@ def main(trips: int) -> None:
                 potholes=potholes,
                 depth_m=depth or 0.08,
                 seed=1000 + i * 10 + k,
-                start_lat=LAT + street * BLOCK,
-                start_lon=LON,
+                route=route_for(street, 2),
             )
             res = post(
                 "/v1/batches",
